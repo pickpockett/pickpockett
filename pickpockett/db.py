@@ -7,6 +7,13 @@ engine = create_engine(f"sqlite:///{__name__}", echo=True)
 Session = sessionmaker(bind=engine)
 
 
+class Config(Base):
+    __tablename__ = "config"
+
+    name = Column(Text, primary_key=True)
+    value = Column(Text)
+
+
 class Source(Base):
     __tablename__ = "sources"
 

@@ -7,6 +7,7 @@ import tzlocal
 
 from .db import Session, Source
 from .pick import find_magnet_link
+from .sonarr import Sonarr, get_tvdb_id
 
 CAPS = "caps"
 REGISTER = "register"
@@ -49,7 +50,7 @@ def _rss_date(timestamp):
     return rss_date
 
 
-def _item(name, url, magnet, timestamp):
+def _item(name, tvdb_id, url, magnet, timestamp):
     item = et.Element("item")
 
     title = et.SubElement(item, "title")
@@ -72,7 +73,8 @@ def _item(name, url, magnet, timestamp):
         type="application/x-bittorrent;x-scheme-handler/magnet",
     )
 
-    et.SubElement(item, "torznab:attr", name="tvdbid", value="0")
+    if tvdb_id:
+        et.SubElement(item, "torznab:attr", name="tvdbid", value=str(tvdb_id))
 
     return item
 
@@ -81,6 +83,7 @@ def _stub():
     return [
         _item(
             "pickpockett",
+            0,
             "https://github.com/pickpockett/pickpockett",
             "magnet:?xt=urn:btih:",
             time.time(),
@@ -110,6 +113,8 @@ def tv_search(q=None, **_):
             items.append(_stub())
 
     if sources:
+        sonarr = Sonarr.load(session)
+
         for source in sources:
             if not source.link:
                 continue
@@ -124,6 +129,7 @@ def tv_search(q=None, **_):
 
             item = _item(
                 source.title + f" S{source.season or 1}E1-99",
+                get_tvdb_id(source.title, sonarr),
                 source.link,
                 magnet,
                 time.time(),
