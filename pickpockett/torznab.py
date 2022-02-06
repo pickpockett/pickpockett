@@ -72,6 +72,8 @@ def _item(name, url, magnet, timestamp):
         type="application/x-bittorrent;x-scheme-handler/magnet",
     )
 
+    et.SubElement(item, "torznab:attr", name="tvdbid", value="0")
+
     return item
 
 
@@ -91,6 +93,8 @@ def _tostring(xml):
 
 
 def tv_search(q=None, **_):
+    items = []
+
     session = Session()
     if q:
         sources: List[Source] = list(session.query(Source).filter_by(title=q))
@@ -102,8 +106,10 @@ def tv_search(q=None, **_):
     else:
         sources: List[Source] = list(session.query(Source))
 
+        if not sources:
+            items.append(_stub())
+
     if sources:
-        items = []
         for source in sources:
             if not source.link:
                 continue
@@ -116,12 +122,19 @@ def tv_search(q=None, **_):
             session.merge(source)
             session.commit()
 
-            item = _item(q, source.link, magnet, time.time())
+            item = _item(
+                source.title + f" S{source.season or 1}E1-99",
+                source.link,
+                magnet,
+                time.time(),
+            )
             items.append(item)
-    else:
-        items = _stub()
 
-    root = et.Element("rss", version="2.0")
+    root = et.Element(
+        "rss",
+        {"xmlns:torznab": "http://torznab.com/schemas/2015/feed"},
+        version="2.0",
+    )
     channel = et.SubElement(root, "channel")
 
     for item in items:
