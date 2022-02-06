@@ -1,5 +1,4 @@
 import time
-import uuid
 from datetime import datetime
 from typing import List
 from xml.etree import ElementTree as et
@@ -69,7 +68,7 @@ def _item(name, url, timestamp, magneturl, infohash, tvdb_id):
     title.text = name
 
     guid = et.SubElement(item, "guid")
-    guid.text = uuid.uuid4().hex
+    guid.text = name
 
     comments = et.SubElement(item, "comments")
     comments.text = url
