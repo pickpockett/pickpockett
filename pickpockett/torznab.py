@@ -149,19 +149,25 @@ def tv_search(q=None, **_):
             if magnetlink is None:
                 continue
 
+            infohash = hash_from_magnet(magnetlink)
+            if source.hash != infohash:
+                source.hash = infohash
+                source.timestamp = time.time()
+                session.merge(source)
+                session.commit()
+
             if cookies:
                 source.cookies = cookies
                 session.merge(source)
                 session.commit()
 
             season = source.season or 1
-            infohash = hash_from_magnet(magnetlink)
             tvdb_id = get_tvdb_id(source.title, sonarr)
             for i in range(1, 100):
                 item = _item(
                     source.title + f" S{season:02}E{i:02} (1080p WEBRip)",
                     source.link,
-                    time.time(),
+                    source.timestamp,
                     magnetlink,
                     infohash,
                     tvdb_id,
