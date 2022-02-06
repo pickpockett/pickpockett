@@ -35,6 +35,15 @@ def error(code, description):
 def caps(**_):
     root = et.Element("caps")
 
+    searching = et.SubElement(root, "searching")
+    et.SubElement(searching, "search", available="yes", supportedParams="q")
+    et.SubElement(
+        searching, "tv-search", available="yes", supportedParams="q,season,ep"
+    )
+    et.SubElement(
+        searching, "movie-search", available="no", supportedParams="q"
+    )
+
     categories = et.SubElement(root, "categories")
     category = et.SubElement(categories, "category", id="5000", name="TV")
     et.SubElement(category, "subcat", id="5030", name="SD")
