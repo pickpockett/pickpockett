@@ -1,10 +1,11 @@
 from flask import Response, request
 
 from . import app, torznab
+from .db import Base, engine
 
 
 @app.route("/")
-def hello_world():
+def ui():
     return "soon..."
 
 
@@ -18,7 +19,6 @@ def api():
         return Response(caps)
     elif t in (torznab.SEARCH, torznab.TV_SEARCH):
         search = torznab.tv_search(**kwargs)
-        print(search)
         return Response(search)
     elif t in (
         torznab.REGISTER,
@@ -40,4 +40,5 @@ def api():
         return Response(torznab.error(202, "No such function"))
 
 
+Base.metadata.create_all(engine)
 app.run(host="0.0.0.0", port=7979)
