@@ -6,7 +6,7 @@ from xml.etree import ElementTree as et
 import tzlocal
 
 from .db import Session, Source
-from .pick import find_magnet_link
+from .pick import find_magnet_link, hash_from_magnet
 from .sonarr import Sonarr, get_tvdb_id
 
 CAPS = "caps"
@@ -50,7 +50,9 @@ def _rss_date(timestamp):
     return rss_date
 
 
-def _item(name, tvdb_id, url, magnet, timestamp):
+def _item(name, url, timestamp, magneturl, infohash, tvdb_id):
+    size_value = "0"
+
     item = et.Element("item")
 
     title = et.SubElement(item, "title")
@@ -59,20 +61,34 @@ def _item(name, tvdb_id, url, magnet, timestamp):
     guid = et.SubElement(item, "guid")
     guid.text = url
 
+    comments = et.SubElement(item, "comments")
+    comments.text = url
+
     pub_date = et.SubElement(item, "pubDate")
     pub_date.text = _rss_date(timestamp)
 
-    comments = et.SubElement(item, "comments")
-    comments.text = url
+    size = et.SubElement(item, "size")
+    size.text = size_value
+
+    description = et.SubElement(item, "description")
+    description.text = title
+
+    comments = et.SubElement(item, "link")
+    comments.text = magneturl
 
     et.SubElement(
         item,
         "enclosure",
-        url=magnet,
-        length="0",
+        url=magneturl,
+        length=size_value,
         type="application/x-bittorrent;x-scheme-handler/magnet",
     )
 
+    et.SubElement(item, "torznab:attr", name="size", value=size_value)
+    et.SubElement(item, "torznab:attr", name="magneturl", value=magneturl)
+    et.SubElement(item, "torznab:attr", name="seeders", value="99")
+    et.SubElement(item, "torznab:attr", name="leechers", value="0")
+    et.SubElement(item, "torznab:attr", name="infohash", value=infohash)
     if tvdb_id:
         et.SubElement(item, "torznab:attr", name="tvdbid", value=str(tvdb_id))
 
@@ -83,10 +99,11 @@ def _stub():
     return [
         _item(
             "pickpockett",
-            0,
             "https://github.com/pickpockett/pickpockett",
-            "magnet:?xt=urn:btih:",
             time.time(),
+            "magnet:?xt=urn:btih:",
+            "",
+            0,
         )
     ]
 
@@ -119,8 +136,8 @@ def tv_search(q=None, **_):
             if not source.link:
                 continue
 
-            magnet, cookies = find_magnet_link(source.link, source.cookies)
-            if magnet is None:
+            magnetlink, cookies = find_magnet_link(source.link, source.cookies)
+            if magnetlink is None:
                 continue
 
             source.cookies = cookies
@@ -128,11 +145,12 @@ def tv_search(q=None, **_):
             session.commit()
 
             item = _item(
-                source.title + f" S{source.season or 1}E1-99",
-                get_tvdb_id(source.title, sonarr),
+                source.title + f" S{source.season or 1}E1-99 (1080p WEBRip)",
                 source.link,
-                magnet,
                 time.time(),
+                magnetlink,
+                hash_from_magnet(magnetlink),
+                get_tvdb_id(source.title, sonarr),
             )
             items.append(item)
 
