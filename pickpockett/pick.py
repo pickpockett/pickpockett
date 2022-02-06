@@ -45,7 +45,7 @@ def find_magnet_link(url, cookies=None):
     req_cookies = _prepare_cookies(cookies) if cookies else None
 
     r = requests.get(url, cookies=req_cookies)
-    bs = BeautifulSoup(r.text)
+    bs = BeautifulSoup(r.text, "html.parser")
     tag = bs.find(_magnet_link)
 
     if tag:
