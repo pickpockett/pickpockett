@@ -1,4 +1,5 @@
 import time
+import uuid
 from datetime import datetime
 from typing import List
 from xml.etree import ElementTree as et
@@ -68,7 +69,7 @@ def _item(name, url, timestamp, magneturl, infohash, tvdb_id):
     title.text = name
 
     guid = et.SubElement(item, "guid")
-    guid.text = url
+    guid.text = uuid.uuid4().hex
 
     comments = et.SubElement(item, "comments")
     comments.text = url
@@ -154,15 +155,19 @@ def tv_search(q=None, **_):
                 session.merge(source)
                 session.commit()
 
-            item = _item(
-                source.title + f" S{source.season or 1}E1-99 (1080p WEBRip)",
-                source.link,
-                time.time(),
-                magnetlink,
-                hash_from_magnet(magnetlink),
-                get_tvdb_id(source.title, sonarr),
-            )
-            items.append(item)
+            season = source.season or 1
+            infohash = hash_from_magnet(magnetlink)
+            tvdb_id = get_tvdb_id(source.title, sonarr)
+            for i in range(1, 100):
+                item = _item(
+                    source.title + f" S{season:02}E{i:02} (1080p WEBRip)",
+                    source.link,
+                    time.time(),
+                    magnetlink,
+                    infohash,
+                    tvdb_id,
+                )
+                items.append(item)
 
     root = et.Element(
         "rss",
