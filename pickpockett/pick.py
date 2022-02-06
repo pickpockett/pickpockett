@@ -10,6 +10,9 @@ magnet = re.compile(r"(['\"])(magnet:\?.*xt=urn:btih:[a-fA-F0-9]{40}.*?)\1")
 
 
 def _prepare_cookies(cookies):
+    if cookies is None:
+        return
+
     cookies_orig = cookies
 
     if isinstance(cookies, str):
@@ -38,7 +41,10 @@ def find_magnet_link(url, cookies=None):
     match = magnet.search(r.text)
     if match:
         res_cookies = dict_from_cookiejar(r.cookies)
-        return match.group(2), json.dumps(res_cookies or req_cookies)
+        return (
+            match.group(2),
+            json.dumps(res_cookies) if cookies else None,
+        )
     return None, None
 
 

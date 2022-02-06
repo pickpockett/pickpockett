@@ -149,9 +149,10 @@ def tv_search(q=None, **_):
             if magnetlink is None:
                 continue
 
-            source.cookies = cookies
-            session.merge(source)
-            session.commit()
+            if cookies:
+                source.cookies = cookies
+                session.merge(source)
+                session.commit()
 
             item = _item(
                 source.title + f" S{source.season or 1}E1-99 (1080p WEBRip)",
