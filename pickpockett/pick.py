@@ -35,7 +35,7 @@ def find_magnet_link(url, cookies=None):
     match = magnet.search(r.text)
     if match:
         res_cookies = requests.utils.dict_from_cookiejar(r.cookies)
-        return match.group(2), json.dumps(res_cookies)
+        return match.group(2), json.dumps(res_cookies or req_cookies)
     return None, None
 
 

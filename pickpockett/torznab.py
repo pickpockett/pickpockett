@@ -95,24 +95,29 @@ def tv_search(q=None, **_):
     if q:
         sources: List[Source] = list(session.query(Source).filter_by(title=q))
 
-        if sources:
-            items = []
-            for source in sources:
-                magnet, cookies = find_magnet_link(source.link, source.cookies)
-                if magnet is None:
-                    continue
-
-                source.cookies = cookies
-                session.merge(source)
-
-                item = _item(q, source.link, magnet, time.time())
-                items.append(item)
-        else:
+        if not sources:
             source = Source(title=q)
             session.merge(source)
             session.commit()
+    else:
+        sources: List[Source] = list(session.query(Source))
 
-            items = _stub()
+    if sources:
+        items = []
+        for source in sources:
+            if not source.link:
+                continue
+
+            magnet, cookies = find_magnet_link(source.link, source.cookies)
+            if magnet is None:
+                continue
+
+            source.cookies = cookies
+            session.merge(source)
+            session.commit()
+
+            item = _item(q, source.link, magnet, time.time())
+            items.append(item)
     else:
         items = _stub()
 
