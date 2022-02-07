@@ -1,7 +1,6 @@
 from flask import Response, request
 
-from . import app, torznab
-from .db import Base, engine
+from . import app, db, torznab
 
 
 @app.route("/")
@@ -40,5 +39,5 @@ def api():
         return Response(torznab.error(202, "No such function"))
 
 
-Base.metadata.create_all(engine)
+db.create_all()
 app.run(host="0.0.0.0", port=7979)

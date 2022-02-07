@@ -4,8 +4,9 @@ from xml.etree import ElementTree as et
 
 import tzlocal
 
+from . import db
 from .config import SonarrConfig
-from .db import Session, Source
+from .models import Source
 from .pick import find_magnet_link, hash_from_magnet
 from .sonarr import Sonarr
 
@@ -121,11 +122,11 @@ def _tostring(xml):
     return et.tostring(xml, encoding="utf-8", xml_declaration=True)
 
 
-def _query(session, q, tvdbid, season):
+def _query(q, tvdbid, season):
     if q:
         return []
 
-    query = session.query(Source)
+    query = db.session.query(Source)
 
     if tvdbid:
         query = query.filter_by(tvdb_id=tvdbid)
@@ -139,8 +140,7 @@ def _query(session, q, tvdbid, season):
 def tv_search(q=None, tvdbid=None, season=None, **_):
     items = []
 
-    session = Session()
-    sources = _query(session, q, tvdbid, season)
+    sources = _query(q, tvdbid, season)
 
     if sources:
         for source in sources:
@@ -155,15 +155,15 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
             if source.hash != infohash:
                 source.hash = infohash
                 source.timestamp = time.time()
-                session.merge(source)
-                session.commit()
+                db.session.merge(source)
+                db.session.commit()
 
             if cookies:
                 source.cookies = cookies
-                session.merge(source)
-                session.commit()
+                db.session.merge(source)
+                db.session.commit()
 
-            sonarr_config = SonarrConfig.load(session)
+            sonarr_config = SonarrConfig.load()
             sonarr = Sonarr(sonarr_config)
 
             title = sonarr.get_title(source.tvdb_id)
@@ -182,8 +182,8 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
     else:
         if tvdbid:
             source = Source(tvdb_id=tvdbid, season=season)
-            session.merge(source)
-            session.commit()
+            db.session.merge(source)
+            db.session.commit()
 
     if not q and not tvdbid and not items:
         items.append(_stub())
