@@ -128,6 +128,10 @@ def _query(q, tvdbid, season):
 
     if tvdbid:
         query = query.filter_by(tvdb_id=tvdbid)
+        if not db.session.query(query.exists()).scalar():
+            source = Source(tvdb_id=tvdbid)
+            db.session.merge(source)
+            db.session.commit()
 
         if season:
             query = query.filter_by(season=season)
@@ -177,11 +181,6 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                     tvdbid,
                 )
                 items.append(item)
-    else:
-        if tvdbid:
-            source = Source(tvdb_id=tvdbid, season=season)
-            db.session.merge(source)
-            db.session.commit()
 
     if not q and not tvdbid and not items:
         items.append(_stub())
