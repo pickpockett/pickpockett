@@ -1,16 +1,16 @@
-from . import db
 from .models import Config
 
 
-class SonarrConfig:
-    _prefix = "sonarr_"
+class ConfigParameter:
+    def __get__(self, instance, owner=None):
+        if parameter := Config.query.get(self._name):
+            return parameter.value
 
-    @classmethod
-    def load(cls):
-        obj = cls()
-        for setting in db.session.query(Config).filter(
-            Config.name.startswith(cls._prefix)
-        ):
-            name = setting.name.split(cls._prefix, 1)[1]
-            setattr(obj, name, setting.value)
-        return obj
+    def __set_name__(self, owner, name):
+        prefix = owner.__name__.rstrip("Config").lower()
+        self._name = prefix + "_" + name
+
+
+class SonarrConfig:
+    url = ConfigParameter()
+    apikey = ConfigParameter()
