@@ -1,31 +1,33 @@
-import requests
+from urllib.parse import urljoin
 
-from .db import Config
+import requests
 
 
 class Sonarr:
-    _prefix = "sonarr_"
+    def __init__(self, config):
+        self.url = config.url
+        self.apikey = config.apikey
 
-    @classmethod
-    def load(cls, session):
-        obj = Sonarr()
-        for setting in session.query(Config).filter(
-            Config.name.startswith(cls._prefix)
-        ):
-            name = setting.name.split(cls._prefix, 1)[1]
-            setattr(obj, name, setting.value)
-        return obj
+    def _url(self, endpoint):
+        return urljoin(self.url, f"api/{endpoint}")
 
+    def _get(self, endpoint, **kwargs):
+        url = self._url(endpoint)
+        params = {"apikey": self.apikey, **kwargs}
+        r = requests.get(url, params=params)
+        if r.ok:
+            return r.json()
+        return []
 
-def get_title(tvdb_id, sonarr):
-    url = (
-        f"http://{sonarr.host}:{sonarr.port}/api/series?"
-        f"apikey={sonarr.apikey}"
-    )
-    r = requests.get(url)
-    if not r.ok:
-        return
+    def series(self):
+        return self._get("series")
 
-    for show in r.json():
-        if show["tvdbId"] == tvdb_id:
-            return show["title"]
+    def get_series(self, tvdb_id):
+        series = self.series()
+        for item in series:
+            if item["tvdbId"] == tvdb_id:
+                return item
+
+    def get_title(self, tvdb_id):
+        if series := self.get_series(tvdb_id):
+            return series["title"]

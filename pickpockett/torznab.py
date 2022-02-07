@@ -4,9 +4,10 @@ from xml.etree import ElementTree as et
 
 import tzlocal
 
+from .config import SonarrConfig
 from .db import Session, Source
 from .pick import find_magnet_link, hash_from_magnet
-from .sonarr import Sonarr, get_title
+from .sonarr import Sonarr
 
 CAPS = "caps"
 REGISTER = "register"
@@ -162,9 +163,12 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                 session.merge(source)
                 session.commit()
 
+            sonarr_config = SonarrConfig.load(session)
+            sonarr = Sonarr(sonarr_config)
+
+            title = sonarr.get_title(source.tvdb_id)
             season = source.season or 1
-            sonarr = Sonarr.load(session)
-            title = get_title(source.tvdb_id, sonarr)
+
             for i in range(1, 100):
                 item = _item(
                     title + f" S{season:02}E{i:02} (1080p WEBRip)",
