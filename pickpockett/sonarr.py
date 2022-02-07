@@ -19,8 +19,18 @@ class Sonarr:
             return r.json()
         return []
 
+    def episode(self, series_id):
+        return self._get("episode", seriesId=series_id)
+
     def series(self):
         return self._get("series")
+
+    def get_episode(self, tvdb_id, season=None):
+        series = self.get_series(tvdb_id)
+        episode = self.episode(series["id"])
+        if season:
+            episode = [e for e in episode if e["seasonNumber"] == season]
+        return episode
 
     def get_series(self, tvdb_id):
         series = self.series()
