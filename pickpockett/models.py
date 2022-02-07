@@ -11,10 +11,9 @@ class Config(db.Model):
 class Source(db.Model):
     __tablename__ = "sources"
 
-    tvdb_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
-    season = db.Column(
-        db.Integer, primary_key=True, autoincrement=False, nullable=True
-    )
+    id = db.Column(db.Integer, primary_key=True)
+    tvdb_id = db.Column(db.Integer, nullable=False)
+    season = db.Column(db.Integer)
     link = db.Column(db.Text, nullable=False, server_default="")
     cookies = db.Column(db.Text, nullable=False, server_default="")
     hash = db.Column(db.String(40), nullable=False, server_default="")
