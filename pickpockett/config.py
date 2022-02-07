@@ -1,7 +1,10 @@
+from functools import lru_cache
+
 from .models import Config
 
 
 class ConfigParameter:
+    @lru_cache(maxsize=1)
     def __get__(self, instance, owner=None):
         if parameter := Config.query.get(self._name):
             return parameter.value
