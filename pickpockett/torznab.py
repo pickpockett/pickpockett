@@ -161,7 +161,7 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                 db.session.merge(source)
                 db.session.commit()
 
-            sonarr_config = SonarrConfig.load()
+            sonarr_config = SonarrConfig()
             sonarr = Sonarr(sonarr_config)
 
             title = sonarr.get_title(source.tvdb_id)
