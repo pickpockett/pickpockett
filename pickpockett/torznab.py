@@ -130,7 +130,7 @@ def _query(q, tvdbid, season):
         query = query.filter_by(tvdb_id=tvdbid)
         if not db.session.query(query.exists()).scalar():
             source = Source(tvdb_id=tvdbid)
-            db.session.merge(source)
+            db.session.add(source)
             db.session.commit()
 
         if season:
@@ -144,53 +144,50 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
 
     sources = _query(q, tvdbid, season)
 
-    if sources:
-        for source in sources:
-            if not source.link:
-                continue
+    for source in sources:
+        if not source.link:
+            continue
 
-            magnetlink, cookies = find_magnet_link(source.link, source.cookies)
-            if magnetlink is None:
-                continue
+        magnetlink, cookies = find_magnet_link(source.link, source.cookies)
+        if magnetlink is None:
+            continue
 
-            infohash = hash_from_magnet(magnetlink)
-            if source.hash != infohash:
-                source.hash = infohash
-                source.datetime = datetime.utcnow()
-                db.session.merge(source)
-                db.session.commit()
+        infohash = hash_from_magnet(magnetlink)
+        if source.hash != infohash:
+            source.hash = infohash
+            source.datetime = datetime.utcnow()
+            db.session.commit()
 
-            if cookies:
-                source.cookies = cookies
-                db.session.merge(source)
-                db.session.commit()
+        if cookies:
+            source.cookies = cookies
+            db.session.commit()
 
-            sonarr_config = SonarrConfig()
-            sonarr = Sonarr(sonarr_config)
+        sonarr_config = SonarrConfig()
+        sonarr = Sonarr(sonarr_config)
 
-            title, missing = sonarr.get_missing(
-                source.tvdb_id, source.season, source.datetime
+        title, missing = sonarr.get_missing(
+            source.tvdb_id, source.season, source.datetime
+        )
+
+        for ep in missing:
+            season_number = ep["seasonNumber"]
+            episode_number = ep["episodeNumber"]
+            name = " ".join(
+                (
+                    title,
+                    f"S{season_number:02}E{episode_number:02}",
+                    "[1080p WEBRip]",
+                )
             )
-
-            for ep in missing:
-                season_number = ep["seasonNumber"]
-                episode_number = ep["episodeNumber"]
-                name = " ".join(
-                    (
-                        title,
-                        f"S{season_number:02}E{episode_number:02}",
-                        "[1080p WEBRip]",
-                    )
-                )
-                item = _item(
-                    name,
-                    source.link,
-                    source.datetime,
-                    magnetlink,
-                    infohash,
-                    tvdbid,
-                )
-                items.append(item)
+            item = _item(
+                name,
+                source.link,
+                source.datetime,
+                magnetlink,
+                infohash,
+                tvdbid,
+            )
+            items.append(item)
 
     if not q and not tvdbid and not items:
         items.append(_stub())
