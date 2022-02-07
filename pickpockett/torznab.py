@@ -1,8 +1,7 @@
-import time
-from datetime import datetime
+from datetime import datetime, timezone
 from xml.etree import ElementTree as et
 
-import tzlocal
+from flask_sqlalchemy import BaseQuery
 
 from . import db
 from .config import SonarrConfig
@@ -55,14 +54,13 @@ def caps(**_):
     return _tostring(root)
 
 
-def _rss_date(timestamp):
-    tz = tzlocal.get_localzone()
-    dt = datetime.fromtimestamp(timestamp, tz)
+def _rss_date(dt):
+    dt = dt.replace(tzinfo=timezone.utc)
     rss_date = dt.strftime("%a, %d %b %Y %H:%M:%S %z")
     return rss_date
 
 
-def _item(name, url, timestamp, magneturl, infohash, tvdb_id):
+def _item(name, url, dt, magneturl, infohash, tvdb_id):
     size_value = "0"
 
     item = et.Element("item")
@@ -77,7 +75,7 @@ def _item(name, url, timestamp, magneturl, infohash, tvdb_id):
     comments.text = url
 
     pub_date = et.SubElement(item, "pubDate")
-    pub_date.text = _rss_date(timestamp)
+    pub_date.text = _rss_date(dt)
 
     size = et.SubElement(item, "size")
     size.text = size_value
@@ -109,13 +107,13 @@ def _item(name, url, timestamp, magneturl, infohash, tvdb_id):
 
 def _stub():
     return _item(
-            "pickpockett",
-            "https://github.com/pickpockett/pickpockett",
-            time.time(),
-            "magnet:?xt=urn:btih:",
-            "",
-            0,
-        )
+        "pickpockett",
+        "https://github.com/pickpockett/pickpockett",
+        datetime.utcnow(),
+        "magnet:?xt=urn:btih:",
+        "",
+        0,
+    )
 
 
 def _tostring(xml):
@@ -126,7 +124,7 @@ def _query(q, tvdbid, season):
     if q:
         return []
 
-    query = db.session.query(Source)
+    query: BaseQuery = Source.query
 
     if tvdbid:
         query = query.filter_by(tvdb_id=tvdbid)
@@ -154,7 +152,7 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
             infohash = hash_from_magnet(magnetlink)
             if source.hash != infohash:
                 source.hash = infohash
-                source.timestamp = time.time()
+                source.datetime = datetime.utcnow()
                 db.session.merge(source)
                 db.session.commit()
 
@@ -173,7 +171,7 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                 item = _item(
                     title + f" S{season:02}E{i:02} (1080p WEBRip)",
                     source.link,
-                    source.timestamp,
+                    source.datetime,
                     magnetlink,
                     infohash,
                     tvdbid,

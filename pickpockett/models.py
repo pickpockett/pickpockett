@@ -17,4 +17,8 @@ class Source(db.Model):
     link = db.Column(db.Text, nullable=False, server_default="")
     cookies = db.Column(db.Text, nullable=False, server_default="")
     hash = db.Column(db.String(40), nullable=False, server_default="")
-    timestamp = db.Column(db.Integer, nullable=False, server_default="0")
+    datetime = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default="0001-01-01 0:00:00.000",
+    )
