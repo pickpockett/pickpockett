@@ -168,12 +168,22 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
             sonarr_config = SonarrConfig()
             sonarr = Sonarr(sonarr_config)
 
-            title = sonarr.get_title(source.tvdb_id)
-            season = source.season or 1
+            title, missing = sonarr.get_missing(
+                source.tvdb_id, source.season, source.datetime
+            )
 
-            for i in range(1, 100):
+            for ep in missing:
+                season_number = ep["seasonNumber"]
+                episode_number = ep["episodeNumber"]
+                name = " ".join(
+                    (
+                        title,
+                        f"S{season_number:02}E{episode_number:02}",
+                        "[1080p WEBRip]",
+                    )
+                )
                 item = _item(
-                    title + f" S{season:02}E{i:02} (1080p WEBRip)",
+                    name,
                     source.link,
                     source.datetime,
                     magnetlink,

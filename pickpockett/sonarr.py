@@ -1,6 +1,13 @@
+from datetime import datetime
 from urllib.parse import urljoin
 
 import requests
+
+
+def _json_datetime(s):
+    if s:
+        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ")
+    return datetime(9999, 12, 31, 23, 59)
 
 
 class Sonarr:
@@ -22,22 +29,20 @@ class Sonarr:
     def episode(self, series_id):
         return self._get("episode", seriesId=series_id)
 
-    def series(self):
-        return self._get("series")
-
-    def get_episode(self, tvdb_id, season=None):
-        series = self.get_series(tvdb_id)
-        episode = self.episode(series["id"])
-        if season:
-            episode = [e for e in episode if e["seasonNumber"] == season]
-        return episode
-
     def get_series(self, tvdb_id):
-        series = self.series()
+        series = self._get("series")
         for item in series:
             if item["tvdbId"] == tvdb_id:
                 return item
 
-    def get_title(self, tvdb_id):
-        if series := self.get_series(tvdb_id):
-            return series["title"]
+    def get_missing(self, tvdb_id, season, dt):
+        series = self.get_series(tvdb_id)
+        episode = self.episode(series["id"])
+        missing = [
+            ep
+            for ep in episode
+            if ep["seasonNumber"] == season
+            and dt > _json_datetime(ep.get("airDateUtc"))
+            and ep["hasFile"] is False
+        ]
+        return series["title"], missing
