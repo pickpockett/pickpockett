@@ -1,13 +1,12 @@
 import time
 from datetime import datetime
-from typing import List
 from xml.etree import ElementTree as et
 
 import tzlocal
 
 from .db import Session, Source
 from .pick import find_magnet_link, hash_from_magnet
-from .sonarr import Sonarr, get_tvdb_id
+from .sonarr import Sonarr, get_title
 
 CAPS = "caps"
 REGISTER = "register"
@@ -32,17 +31,19 @@ def error(code, description):
     return _tostring(root)
 
 
+def _search(name="search", *, available=True, params="q"):
+    return et.Element(
+        name, available="yes" if available else "no", supportedParams=params
+    )
+
+
 def caps(**_):
     root = et.Element("caps")
 
     searching = et.SubElement(root, "searching")
-    et.SubElement(searching, "search", available="yes", supportedParams="q")
-    et.SubElement(
-        searching, "tv-search", available="yes", supportedParams="q,season,ep"
-    )
-    et.SubElement(
-        searching, "movie-search", available="no", supportedParams="q"
-    )
+    searching.append(_search())
+    searching.append(_search("tv-search", params="tvdbid,season,ep"))
+    searching.append(_search("movie-search", available=False))
 
     categories = et.SubElement(root, "categories")
     category = et.SubElement(categories, "category", id="5000", name="TV")
@@ -105,8 +106,7 @@ def _item(name, url, timestamp, magneturl, infohash, tvdb_id):
 
 
 def _stub():
-    return [
-        _item(
+    return _item(
             "pickpockett",
             "https://github.com/pickpockett/pickpockett",
             time.time(),
@@ -114,33 +114,34 @@ def _stub():
             "",
             0,
         )
-    ]
 
 
 def _tostring(xml):
     return et.tostring(xml, encoding="utf-8", xml_declaration=True)
 
 
-def tv_search(q=None, **_):
+def _query(session, q, tvdbid, season):
+    if q:
+        return []
+
+    query = session.query(Source)
+
+    if tvdbid:
+        query = query.filter_by(tvdb_id=tvdbid)
+
+        if season:
+            query = query.filter_by(season=season)
+
+    return query.all()
+
+
+def tv_search(q=None, tvdbid=None, season=None, **_):
     items = []
 
     session = Session()
-    if q:
-        sources: List[Source] = list(session.query(Source).filter_by(title=q))
-
-        if not sources:
-            source = Source(title=q)
-            session.merge(source)
-            session.commit()
-    else:
-        sources: List[Source] = list(session.query(Source))
-
-        if not sources:
-            items.append(_stub())
+    sources = _query(session, q, tvdbid, season)
 
     if sources:
-        sonarr = Sonarr.load(session)
-
         for source in sources:
             if not source.link:
                 continue
@@ -162,17 +163,26 @@ def tv_search(q=None, **_):
                 session.commit()
 
             season = source.season or 1
-            tvdb_id = get_tvdb_id(source.title, sonarr)
+            sonarr = Sonarr.load(session)
+            title = get_title(source.tvdb_id, sonarr)
             for i in range(1, 100):
                 item = _item(
-                    source.title + f" S{season:02}E{i:02} (1080p WEBRip)",
+                    title + f" S{season:02}E{i:02} (1080p WEBRip)",
                     source.link,
                     source.timestamp,
                     magnetlink,
                     infohash,
-                    tvdb_id,
+                    tvdbid,
                 )
                 items.append(item)
+    else:
+        if tvdbid:
+            source = Source(tvdb_id=tvdbid, season=season)
+            session.merge(source)
+            session.commit()
+
+    if not q and not tvdbid and not items:
+        items.append(_stub())
 
     root = et.Element(
         "rss",
@@ -180,8 +190,6 @@ def tv_search(q=None, **_):
         version="2.0",
     )
     channel = et.SubElement(root, "channel")
-
-    for item in items:
-        channel.append(item)
+    channel.extend(items)
 
     return _tostring(root)

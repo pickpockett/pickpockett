@@ -1,5 +1,3 @@
-import urllib.parse
-
 import requests
 
 from .db import Config
@@ -19,13 +17,15 @@ class Sonarr:
         return obj
 
 
-def get_tvdb_id(title, sonarr):
-    term = urllib.parse.quote(title)
+def get_title(tvdb_id, sonarr):
     url = (
-        f"http://{sonarr.host}:{sonarr.port}/api/series/lookup?"
-        f"apikey={sonarr.apikey}&term={term}"
+        f"http://{sonarr.host}:{sonarr.port}/api/series?"
+        f"apikey={sonarr.apikey}"
     )
     r = requests.get(url)
-    if r.ok:
-        result = r.json()
-        return result[0]["tvdbId"]
+    if not r.ok:
+        return
+
+    for show in r.json():
+        if show["tvdbId"] == tvdb_id:
+            return show["title"]

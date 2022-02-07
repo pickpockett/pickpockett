@@ -17,10 +17,11 @@ class Config(Base):
 class Source(Base):
     __tablename__ = "sources"
 
-    id = Column(Integer, primary_key=True)
-    title = Column(Text, nullable=False)
-    season = Column(Integer)
+    tvdb_id = Column(Integer, primary_key=True, autoincrement=False)
+    season = Column(
+        Integer, primary_key=True, autoincrement=False, nullable=True
+    )
     link = Column(Text, nullable=False, server_default="")
-    cookies = Column(Text)
-    hash = Column(String(40))
-    timestamp = Column(Integer)
+    cookies = Column(Text, nullable=False, server_default="")
+    hash = Column(String(40), nullable=False, server_default="")
+    timestamp = Column(Integer, nullable=False, server_default="0")
