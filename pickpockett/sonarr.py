@@ -69,7 +69,7 @@ class Sonarr:
             for ep in episode_list
             if ep.season_number == season
             and ep.air_date_utc is not None
-            and dt > ep.air_date_utc
+            and ep.air_date_utc < dt
             and ep.has_file is False
         ]
         return series.title, missing
