@@ -3,20 +3,31 @@ from typing import List
 from urllib.parse import urljoin
 
 import requests
-from pydantic import BaseModel, Field, parse_obj_as, validator
+from pydantic import BaseModel, parse_obj_as, validator
 
 
 class Series(BaseModel):
     id: int
     title: str
-    tvdb_id: int = Field(..., alias="tvdbId")
+    tvdb_id: int
+
+    class Config:
+        fields = {"tvdb_id": "tvdbId"}
 
 
 class Episode(BaseModel):
-    season_number: int = Field(..., alias="seasonNumber")
-    episode_number: int = Field(..., alias="episodeNumber")
-    air_date_utc: datetime = Field(None, alias="airDateUtc")
-    has_file: bool = Field(..., alias="hasFile")
+    season_number: int
+    episode_number: int
+    air_date_utc: datetime = None
+    has_file: bool
+
+    class Config:
+        fields = {
+            "season_number": "seasonNumber",
+            "episode_number": "episodeNumber",
+            "air_date_utc": "airDateUtc",
+            "has_file": "hasFile",
+        }
 
     @validator("air_date_utc")
     def convert_status(cls, air_date_utc: datetime):
