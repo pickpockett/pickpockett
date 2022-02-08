@@ -18,7 +18,7 @@ class Source(db.Model):
     cookies = db.Column(db.Text, nullable=False, server_default="")
     hash = db.Column(db.String(40), nullable=False, server_default="")
     datetime = db.Column(
-        db.DateTime(timezone=True),
+        db.DateTime,
         nullable=False,
         server_default="0001-01-01 0:00:00.000",
     )

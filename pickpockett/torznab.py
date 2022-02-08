@@ -170,8 +170,8 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
         )
 
         for ep in missing:
-            season_number = ep["seasonNumber"]
-            episode_number = ep["episodeNumber"]
+            season_number = ep.season_number
+            episode_number = ep.episode_number
             name = " ".join(
                 (
                     title,
