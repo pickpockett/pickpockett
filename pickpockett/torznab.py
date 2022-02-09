@@ -64,7 +64,7 @@ def _rss_date(dt):
     return rss_date
 
 
-def _item(name, url, dt, magneturl, infohash, tvdb_id):
+def _item(name, url, dt, magnet_url, info_hash, tvdb_id):
     size_value = "0"
 
     item = et.Element("item")
@@ -88,21 +88,21 @@ def _item(name, url, dt, magneturl, infohash, tvdb_id):
     description.text = title
 
     comments = et.SubElement(item, "link")
-    comments.text = magneturl
+    comments.text = magnet_url
 
     et.SubElement(
         item,
         "enclosure",
-        url=magneturl,
+        url=magnet_url,
         length=size_value,
         type="application/x-bittorrent;x-scheme-handler/magnet",
     )
 
     et.SubElement(item, "torznab:attr", name="size", value=size_value)
-    et.SubElement(item, "torznab:attr", name="magneturl", value=magneturl)
+    et.SubElement(item, "torznab:attr", name="magneturl", value=magnet_url)
     et.SubElement(item, "torznab:attr", name="seeders", value="99")
     et.SubElement(item, "torznab:attr", name="leechers", value="0")
-    et.SubElement(item, "torznab:attr", name="infohash", value=infohash)
+    et.SubElement(item, "torznab:attr", name="infohash", value=info_hash)
     if tvdb_id:
         et.SubElement(item, "torznab:attr", name="tvdbid", value=str(tvdb_id))
 
@@ -111,12 +111,12 @@ def _item(name, url, dt, magneturl, infohash, tvdb_id):
 
 def _stub():
     return _item(
-        "pickpockett",
-        "https://github.com/pickpockett/pickpockett",
-        datetime.utcnow(),
-        "magnet:?xt=urn:btih:",
         "",
-        0,
+        "",
+        datetime.utcnow(),
+        "",
+        "",
+        None,
     )
 
 
@@ -198,8 +198,8 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
             )
             items.append(item)
 
-    if not (q or tvdbid or sources):
-        logger.info("no search criteria and no sources, so return a stub")
+    if not (q or tvdbid or items):
+        logger.info("no search criteria and no sources, so returning a stub")
         items.append(_stub())
 
     root = et.Element(
