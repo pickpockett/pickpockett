@@ -148,6 +148,9 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
     items = []
     sources = _query(q, tvdbid, season)
 
+    sonarr_config = SonarrConfig()
+    sonarr = Sonarr(sonarr_config)
+
     for source in sources:
         if not source.link:
             continue
@@ -174,9 +177,6 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
         if cookies:
             source.cookies = cookies
             db.session.commit()
-
-        sonarr_config = SonarrConfig()
-        sonarr = Sonarr(sonarr_config)
 
         title, missing = sonarr.get_missing(
             source.tvdb_id, source.season, source.datetime
