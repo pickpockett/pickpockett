@@ -158,14 +158,14 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
         magnet_link, cookies = find_magnet_link(source.link, source.cookies)
         if magnet_link is None:
             logger.info(
-                "[tvdbid:%i]: no magnet: %r", source.tvdb_id, source.link
+                "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.link
             )
             continue
 
         info_hash = hash_from_magnet(magnet_link)
         if source.hash != info_hash:
             logger.info(
-                "[tbdbid:%i]: update hash: %r => %r",
+                "[tbdbid:%i]: hash update: %r => %r",
                 source.tvdb_id,
                 source.hash,
                 info_hash,
