@@ -1,11 +1,15 @@
+from typing import List
+
 from flask import Response, render_template, request
 
 from . import app, db, torznab
+from .models import Source
 
 
 @app.route("/")
 def ui():
-    return render_template("index.html")
+    sources: List[Source] = Source.query
+    return render_template("index.html", sources=sources)
 
 
 @app.route("/api")

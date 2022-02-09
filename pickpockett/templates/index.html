@@ -1,7 +1,20 @@
 {% extends "layout.html" %}
 
 {% block content %}
-  <h1>UI</h1>
-  <p class="important">
-    Soon...
+<table id="data" class="table table-striped">
+<thead>
+    <tr>
+        <th>TVDB ID</th>
+        <th>Season</th>
+    </tr>
+</thead>
+<tbody>
+{% for source in sources %}
+    <tr>
+        <td>{{ source.tvdb_id }}</td>
+        <td>{{ source.season }}</td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
 {% endblock %}
