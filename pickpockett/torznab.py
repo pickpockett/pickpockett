@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from xml.etree import ElementTree as et
 
@@ -25,6 +26,9 @@ COMMENTS = "comments"
 COMMENTS_ADD = "commentadd"
 USER = "user"
 NZB_ADD = "nzbadd"
+
+
+logger = logging.getLogger(__name__)
 
 
 def error(code, description):
@@ -120,16 +124,17 @@ def _tostring(xml):
     return et.tostring(xml, encoding="utf-8", xml_declaration=True)
 
 
-def _query(q, tvdbid, season):
+def _query(q, tvdb_id, season):
     if q:
+        logger.info("'q' search parameter isn't supported")
         return []
 
     query: BaseQuery = Source.query
 
-    if tvdbid:
-        query = query.filter_by(tvdb_id=tvdbid)
+    if tvdb_id:
+        query = query.filter_by(tvdb_id=tvdb_id)
         if not db.session.query(query.exists()).scalar():
-            source = Source(tvdb_id=tvdbid)
+            source = Source(tvdb_id=tvdb_id)
             db.session.add(source)
             db.session.commit()
 
@@ -141,20 +146,28 @@ def _query(q, tvdbid, season):
 
 def tv_search(q=None, tvdbid=None, season=None, **_):
     items = []
-
     sources = _query(q, tvdbid, season)
 
     for source in sources:
         if not source.link:
             continue
 
-        magnetlink, cookies = find_magnet_link(source.link, source.cookies)
-        if magnetlink is None:
+        magnet_link, cookies = find_magnet_link(source.link, source.cookies)
+        if magnet_link is None:
+            logger.info(
+                "[tvdbid:%i]: no magnet: %r", source.tvdb_id, source.link
+            )
             continue
 
-        infohash = hash_from_magnet(magnetlink)
-        if source.hash != infohash:
-            source.hash = infohash
+        info_hash = hash_from_magnet(magnet_link)
+        if source.hash != info_hash:
+            logger.info(
+                "[tbdbid:%i]: update hash: %r => %r",
+                source.tvdb_id,
+                source.hash,
+                info_hash,
+            )
+            source.hash = info_hash
             source.datetime = datetime.utcnow()
             db.session.commit()
 
@@ -170,26 +183,23 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
         )
 
         for ep in missing:
-            season_number = ep.season_number
-            episode_number = ep.episode_number
-            name = " ".join(
-                (
-                    title,
-                    f"S{season_number:02}E{episode_number:02}",
-                    "[1080p WEBRip]",
-                )
+            episode = f"{title} S{ep.season_number:02}E{ep.episode_number:02}"
+            logger.info(
+                "[tvdb:%i]: missing episode: %s", source.tvdb_id, episode
             )
+            name = f"{episode} [1080p WEBRip]"
             item = _item(
                 name,
                 source.link,
                 source.datetime,
-                magnetlink,
-                infohash,
+                magnet_link,
+                info_hash,
                 tvdbid,
             )
             items.append(item)
 
-    if not q and not tvdbid and not items:
+    if not (q or tvdbid or sources):
+        logger.info("no search criteria and no sources, so return a stub")
         items.append(_stub())
 
     root = et.Element(
