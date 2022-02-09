@@ -4,14 +4,14 @@
 <table id="data" class="table table-striped">
 <thead>
     <tr>
-        <th>TVDB ID</th>
+        <th>Series</th>
         <th>Season</th>
     </tr>
 </thead>
 <tbody>
 {% for source in sources %}
     <tr>
-        <td>{{ source.tvdb_id }}</td>
+        <td>{{ titles[source.tvdb_id] }}</td>
         <td>{{ source.season }}</td>
     </tr>
 {% endfor %}

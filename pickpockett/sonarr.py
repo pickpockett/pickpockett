@@ -50,26 +50,34 @@ class Sonarr:
             return r.json()
         return []
 
-    def episode(self, series_id):
-        return self._get("episode", seriesId=series_id)
+    def episode(self, series_id: int) -> List[Episode]:
+        episode = self._get("episode", seriesId=series_id)
+        episode_list = parse_obj_as(List[Episode], episode)
+        return episode_list
 
-    def get_series(self, tvdb_id):
+    def series(self) -> List[Series]:
         series = self._get("series")
         series_list = parse_obj_as(List[Series], series)
-        for item in series_list:
-            if item.tvdb_id == tvdb_id:
-                return item
+        return series_list
+
+    def get_series(self, tvdb_id: int):
+        series = self.series()
+        return next(s for s in series if s.tvdb_id == tvdb_id)
 
     def get_missing(self, tvdb_id, season, dt):
         series = self.get_series(tvdb_id)
         episode = self.episode(series.id)
-        episode_list = parse_obj_as(List[Episode], episode)
         missing = [
             ep
-            for ep in episode_list
+            for ep in episode
             if ep.season_number == season
             and ep.air_date_utc is not None
             and ep.air_date_utc < dt
             and ep.has_file is False
         ]
         return series.title, missing
+
+    def get_titles(self):
+        series = self.series()
+        titles = {s.tvdb_id: s.title for s in series}
+        return titles

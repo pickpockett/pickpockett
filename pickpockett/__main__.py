@@ -3,13 +3,24 @@ from typing import List
 from flask import Response, render_template, request
 
 from . import app, db, torznab
+from .config import SonarrConfig
 from .models import Source
+from .sonarr import Sonarr
+
+
+def _title_key(title: str):
+    return title.lower().strip()
 
 
 @app.route("/")
 def ui():
+    sonarr_config = SonarrConfig()
+    sonnar = Sonarr(sonarr_config)
+
+    titles = sonnar.get_titles()
+
     sources: List[Source] = Source.query
-    return render_template("index.html", sources=sources)
+    return render_template("index.html", sources=sources, titles=titles)
 
 
 @app.route("/api")
