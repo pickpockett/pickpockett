@@ -1,11 +1,11 @@
-from flask import Response, request
+from flask import Response, render_template, request
 
 from . import app, db, torznab
 
 
 @app.route("/")
 def ui():
-    return "soon..."
+    return render_template("index.html")
 
 
 @app.route("/api")
