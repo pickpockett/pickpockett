@@ -1,4 +1,5 @@
-from typing import List
+from dataclasses import dataclass
+from operator import attrgetter
 
 from flask import Response, render_template, request
 
@@ -8,8 +9,14 @@ from .models import Source
 from .sonarr import Sonarr
 
 
-def _title_key(title: str):
-    return title.lower().strip()
+@dataclass
+class SeriesSource:
+    title: str
+    source: Source
+
+    @property
+    def short_title(self):
+        return self.title.lower().removeprefix("a").removeprefix("the").strip()
 
 
 @app.route("/")
@@ -19,8 +26,12 @@ def ui():
 
     titles = sonnar.get_titles()
 
-    sources: List[Source] = Source.query
-    return render_template("index.html", sources=sources, titles=titles)
+    series_sources = sorted(
+        [SeriesSource(titles[s.tvdb_id], s) for s in Source.query],
+        key=attrgetter("short_title"),
+    )
+
+    return render_template("index.html", series_sources=series_sources)
 
 
 @app.route("/api")
