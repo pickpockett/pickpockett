@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import Dict, List
 from urllib.parse import urljoin
 
 import requests
@@ -9,10 +9,11 @@ from pydantic import BaseModel, parse_obj_as, validator
 class Series(BaseModel):
     id: int
     title: str
+    sort_title: str
     tvdb_id: int
 
     class Config:
-        fields = {"tvdb_id": "tvdbId"}
+        fields = {"sort_title": "sortTitle", "tvdb_id": "tvdbId"}
 
 
 class Episode(BaseModel):
@@ -55,14 +56,16 @@ class Sonarr:
         episode_list = parse_obj_as(List[Episode], episode)
         return episode_list
 
-    def series(self) -> List[Series]:
+    def series(self) -> Dict[int, Series]:
         series = self._get("series")
-        series_list = parse_obj_as(List[Series], series)
-        return series_list
+        series_dict = {
+            (s := Series.parse_obj(obj)).tvdb_id: s for obj in series
+        }
+        return series_dict
 
     def get_series(self, tvdb_id: int):
         series = self.series()
-        return next(s for s in series if s.tvdb_id == tvdb_id)
+        return series[tvdb_id]
 
     def get_missing(self, tvdb_id, season, dt):
         series = self.get_series(tvdb_id)
@@ -76,8 +79,3 @@ class Sonarr:
             and ep.has_file is False
         ]
         return series.title, missing
-
-    def get_titles(self):
-        series = self.series()
-        titles = {s.tvdb_id: s.title for s in series}
-        return titles

@@ -9,10 +9,10 @@
     </tr>
 </thead>
 <tbody>
-{% for series in series_sources %}
+{% for ss in series_sources %}
     <tr>
-        <td>{{ series.title }}</td>
-        <td>{{ series.source.season }}</td>
+        <td>{{ ss.series.title }}</td>
+        <td>{{ ss.source.season }}</td>
     </tr>
 {% endfor %}
 </tbody>
