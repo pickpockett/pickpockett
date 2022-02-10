@@ -199,7 +199,10 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
             items.append(item)
 
     if not (q or tvdbid or items):
-        logger.info("no search criteria and no sources, so returning a stub")
+        logger.info(
+            "no search criteria and no items,"
+            " so returning a stub to pass the Sonarr test"
+        )
         items.append(_stub())
 
     root = et.Element(
