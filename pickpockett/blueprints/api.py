@@ -5,7 +5,7 @@ from .. import torznab
 bp = Blueprint("api", __name__, url_prefix="/api")
 
 
-@bp.route("/")
+@bp.route("/", strict_slashes=False)
 def api():
     kwargs = request.args.copy()
     t = kwargs.pop("t", None)
