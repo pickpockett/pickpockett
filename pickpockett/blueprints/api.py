@@ -1,6 +1,6 @@
 from flask import Blueprint, Response, request
 
-from pickpockett import torznab
+from .. import torznab
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 

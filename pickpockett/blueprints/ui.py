@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 from flask import Blueprint, render_template
 
-from pickpockett.config import SonarrConfig
-from pickpockett.models import Source
-from pickpockett.sonarr import Sonarr
+from ..config import SonarrConfig
+from ..models import Source
+from ..sonarr import Sonarr
 
 bp = Blueprint("ui", __name__)
 
