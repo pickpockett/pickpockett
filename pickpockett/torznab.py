@@ -185,7 +185,7 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
         for ep in missing:
             episode = f"{title} S{ep.season_number:02}E{ep.episode_number:02}"
             logger.info(
-                "[tvdb:%i]: missing episode: %s", source.tvdb_id, episode
+                "[tvdbid:%i]: missing episode: %s", source.tvdb_id, episode
             )
             name = f"{episode} [1080p WEBRip]"
             item = _item(
