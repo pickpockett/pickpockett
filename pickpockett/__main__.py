@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from operator import attrgetter
 
 from flask import Response, render_template, request
 
@@ -28,7 +27,7 @@ def ui():
 
     series_sources = sorted(
         [SeriesSource(titles[s.tvdb_id], s) for s in Source.query],
-        key=attrgetter("short_title"),
+        key=lambda s: (s.short_title, s.source.season),
     )
 
     return render_template("index.html", series_sources=series_sources)
