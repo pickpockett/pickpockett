@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from flask import Blueprint, render_template
@@ -16,7 +17,7 @@ class SeriesSource:
 
     @property
     def short_title(self):
-        return self.title.lower().removeprefix("a").removeprefix("the").strip()
+        return re.sub(r"^((a|an|the)\s+)", "", self.title.lower())
 
 
 @bp.route("/")
