@@ -206,16 +206,17 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
             source.cookies = cookies
             db.session.commit()
 
-        title, missing = sonarr.get_missing(
-            source.tvdb_id, source.season, source.datetime
-        )
+        series = sonarr.get_series(source.tvdb_id)
+        episodes = series.get_episodes(source.season, source.datetime)
 
-        for ep in missing:
-            episode = f"{title} S{ep.season_number:02}E{ep.episode_number:02}"
-            logger.info(
-                "[tvdbid:%i]: missing episode: %s", source.tvdb_id, episode
-            )
-            name = f"{episode} [1080p WEBRip]"
+        for ep in episodes:
+            ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
+            ep_name = f"{series.title} {ep_repr}"
+            if not ep.has_file:
+                logger.info(
+                    "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
+                )
+            name = f"{ep_name} [1080p WEBRip]"
             item = _item(
                 name,
                 source.link,

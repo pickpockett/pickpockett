@@ -36,6 +36,17 @@ class Series(BaseModel):
     def poster(self):
         return urljoin(self.sonarr.url, self.image("poster").url)
 
+    def get_episodes(self, season, dt) -> List[Episode]:
+        episode = self.sonarr.episode(self.id)
+        season_episode_list = [
+            ep
+            for ep in episode
+            if ep.season_number == season
+            and ep.air_date_utc is not None
+            and (ep.has_file or ep.air_date_utc < dt and not ep.has_file)
+        ]
+        return season_episode_list
+
 
 class Episode(BaseModel):
     season_number: int
@@ -52,7 +63,7 @@ class Episode(BaseModel):
         }
 
     @validator("air_date_utc")
-    def convert_status(cls, air_date_utc: datetime):
+    def remove_tzinfo(cls, air_date_utc: datetime):
         return air_date_utc.replace(tzinfo=None)
 
 
@@ -85,22 +96,9 @@ class Sonarr:
         }
         return series_dict
 
-    def get_series(self, tvdb_id: int):
+    def get_series(self, tvdb_id: int) -> Series:
         series = self.series()
         return series[tvdb_id]
-
-    def get_missing(self, tvdb_id, season, dt):
-        series = self.get_series(tvdb_id)
-        episode = self.episode(series.id)
-        missing = [
-            ep
-            for ep in episode
-            if ep.season_number == season
-            and ep.air_date_utc is not None
-            and ep.air_date_utc < dt
-            and ep.has_file is False
-        ]
-        return series.title, missing
 
 
 Series.update_forward_refs()
