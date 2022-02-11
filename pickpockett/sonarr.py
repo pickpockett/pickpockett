@@ -1,9 +1,19 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Literal
 from urllib.parse import urljoin
 
 import requests
 from pydantic import BaseModel, parse_obj_as, validator
+
+
+class Image(BaseModel):
+    cover_type: Literal["banner", "fanart", "poster"]
+    url: str
+
+    class Config:
+        fields = {"cover_type": "coverType"}
 
 
 class Series(BaseModel):
@@ -11,9 +21,19 @@ class Series(BaseModel):
     title: str
     sort_title: str
     tvdb_id: int
+    images: List[Image]
+    sonarr: Sonarr
 
     class Config:
+        arbitrary_types_allowed = True
         fields = {"sort_title": "sortTitle", "tvdb_id": "tvdbId"}
+
+    def image(self, cover_type: Literal["banner", "fanart", "poster"]):
+        return next(i for i in self.images if i.cover_type == cover_type)
+
+    @property
+    def poster(self):
+        return urljoin(self.sonarr.url, self.image("poster").url)
 
 
 class Episode(BaseModel):
@@ -59,7 +79,8 @@ class Sonarr:
     def series(self) -> Dict[int, Series]:
         series = self._get("series")
         series_dict = {
-            (s := Series.parse_obj(obj)).tvdb_id: s for obj in series
+            (s := Series.parse_obj(dict(obj, sonarr=self))).tvdb_id: s
+            for obj in series
         }
         return series_dict
 
@@ -79,3 +100,6 @@ class Sonarr:
             and ep.has_file is False
         ]
         return series.title, missing
+
+
+Series.update_forward_refs()

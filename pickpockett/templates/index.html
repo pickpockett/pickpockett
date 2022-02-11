@@ -11,7 +11,10 @@
 <tbody>
 {% for ss in series_sources %}
     <tr>
-        <td>{{ ss.series.title }}</td>
+        <td>
+            <img class="icon" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
+            {{ ss.series.title }}
+        </td>
         <td>{{ ss.source.season }}</td>
     </tr>
 {% endfor %}
