@@ -22,6 +22,7 @@ class Series(BaseModel):
     sort_title: str
     tvdb_id: int
     images: List[Image]
+    year: int
     sonarr: Sonarr
 
     class Config:

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<table id="data" class="table table-striped">
+<table class="table table-hover">
 <thead>
     <tr>
         <th>Title</th>
@@ -12,8 +12,9 @@
 {% for ss in series_sources %}
     <tr>
         <td>
-            <img class="icon" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
-            {{ ss.series.title }}
+            <img class="icon px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
+            <span class="px-2">{{ ss.series.title }}</span>
+            <span class="font-italic text-muted">({{ ss.series.year }})</span>
         </td>
         <td>{{ ss.source.season }}</td>
     </tr>
