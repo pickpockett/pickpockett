@@ -216,9 +216,11 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                 logger.info(
                     "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
                 )
-            name = f"{ep_name} [1080p WEBRip]"
+
+            if extra := source.extra:
+                ep_name += f" [{extra}]"
             item = _item(
-                name,
+                ep_name,
                 source.link,
                 source.datetime,
                 magnet_link,

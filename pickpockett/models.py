@@ -20,4 +20,10 @@ class Source(db.Model):
     datetime = db.Column(
         db.DateTime, nullable=False, server_default="0001-01-01 00:00:00"
     )
+    quality = db.Column(db.Text, nullable=False, server_default="WEBRip-1080p")
+    language = db.Column(db.Text, nullable=False, server_default="")
     error = db.Column(db.Text, nullable=False, server_default="")
+
+    @property
+    def extra(self):
+        return ", ".join(e for e in (self.language, self.quality) if e)
