@@ -10,7 +10,7 @@
 </thead>
 <tbody>
 {% for ss in series_sources %}
-    <tr>
+    <tr{% if ss.source.error %} class="table-danger"{% endif %}>
         <td>
             <img class="icon px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
             <span class="px-2">{{ ss.series.title }}</span>

@@ -44,12 +44,14 @@ def _magnet_link(tag):
 def find_magnet_link(url, cookies=None):
     req_cookies = _prepare_cookies(cookies) if cookies else None
 
-    r = requests.get(url, cookies=req_cookies)
-    bs = BeautifulSoup(r.text, "html.parser")
+    response = requests.get(url, cookies=req_cookies)
+    response.raise_for_status()
+
+    bs = BeautifulSoup(response.text, "html.parser")
     tag = bs.find(_magnet_link)
 
     if tag:
-        if cookies and (res_cookies := dict_from_cookiejar(r.cookies)):
+        if cookies and (res_cookies := dict_from_cookiejar(response.cookies)):
             cookies = json.dumps(res_cookies)
         return tag["href"], cookies
 

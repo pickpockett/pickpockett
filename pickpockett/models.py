@@ -20,3 +20,4 @@ class Source(db.Model):
     datetime = db.Column(
         db.DateTime, nullable=False, server_default="0001-01-01 00:00:00"
     )
+    error = db.Column(db.Text, nullable=False, server_default="")

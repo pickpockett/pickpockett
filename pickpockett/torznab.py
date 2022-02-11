@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 from xml.etree import ElementTree as et
 
+import requests
 from flask_sqlalchemy import BaseQuery
 
 from . import db
@@ -155,12 +156,39 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
         if not source.link:
             continue
 
-        magnet_link, cookies = find_magnet_link(source.link, source.cookies)
+        try:
+            magnet_link, cookies = find_magnet_link(
+                source.link, source.cookies
+            )
+        except requests.HTTPError as e:
+            logger.error(e)
+            if e.response is not None:
+                source.error = e.response.reason
+            else:
+                source.error = "HTTP Error"
+            db.session.commit()
+            continue
+        except requests.ConnectionError as e:
+            logger.error(e)
+            source.error = "Connection Error"
+            db.session.commit()
+            continue
+        except Exception as e:
+            logger.error(e)
+            source.error = "Unknown Error"
+            db.session.commit()
+            continue
+
         if magnet_link is None:
-            logger.info(
+            logger.error(
                 "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.link
             )
+            source.error = "No magnet link found"
+            db.session.commit()
             continue
+
+        source.error = ""
+        db.session.commit()
 
         info_hash = hash_from_magnet(magnet_link)
         if source.hash != info_hash:
