@@ -7,8 +7,8 @@ from flask_sqlalchemy import BaseQuery
 
 from . import db
 from .config import SonarrConfig
+from .magnet import find_magnet_link, hash_from_magnet
 from .models import Source
-from .pick import find_magnet_link, hash_from_magnet
 from .sonarr import Sonarr
 
 CAPS = "caps"
