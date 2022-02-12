@@ -10,7 +10,10 @@
 </head>
 <body>
 <div class="container">
-<header class="h1 p-2 bg-dark text-light">PickPockett</header>
+<header class="h1 p-3 bg-dark text-light">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="PickPockett" />
+    <span class="align-middle">PickPockett</span>
+</header>
 {% block content %}{% endblock %}
 </div>
 </body>
