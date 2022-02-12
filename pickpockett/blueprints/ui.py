@@ -26,7 +26,7 @@ def _sort_key(s: SeriesSource):
 def index():
     sonarr_config = SonarrConfig()
     sonarr = Sonarr(sonarr_config)
-    series = sonarr.series()
+    series = sonarr.series_dict()
 
     series_sources = sorted(
         [SeriesSource(series[s.tvdb_id], s) for s in Source.query],
@@ -74,3 +74,17 @@ def delete(source_id):
     Source.query.filter_by(id=source_id).delete()
     db.session.commit()
     return redirect(url_for("ui.index"))
+
+
+@bp.route("/add")
+def add():
+    sonarr_config = SonarrConfig()
+    sonarr = Sonarr(sonarr_config)
+    series = sonarr.series_sorted()
+
+    return render_template("add.html", series=series)
+
+
+@bp.route("/add/<int:tvdb_id>")
+def add_source(tvdb_id):
+    pass

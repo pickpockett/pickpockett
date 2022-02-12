@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row text-center">
+{% for s in series %}
+    <div class="col-6 col-md-4 col-lg-3 col-xl-2 pb-4">
+    <a class="card" href="{{ url_for('ui.add_source', tvdb_id=s.tvdb_id) }}">
+        <div class="card-body">
+            <img class="card-img-top" src="{{ s.poster }}" alt="{{ s.title }}" />
+            <h5 class="card-title">{{ s.title }}</h5>
+        </div>
+    </a>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

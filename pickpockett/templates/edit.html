@@ -8,10 +8,10 @@
 </h1>
 {{ render_form(form, form_type='horizontal') }}
 <div class="d-flex justify-content-between">
-    <a class="btn btn-danger btn-md" href="{{ url_for('ui.delete', source_id=source.id) }}">Delete</a>
+    <a class="btn btn-danger" href="{{ url_for('ui.delete', source_id=source.id) }}">Delete</a>
     <div>
-        <a class="btn btn-secondary btn-md" href="{{ url_for('ui.index') }}">Cancel</a>
-        <label class="btn btn-primary btn-md" for="submit">Submit</label>
+        <a class="btn btn-secondary" href="{{ url_for('ui.index') }}">Cancel</a>
+        <label class="btn btn-primary" for="submit">Submit</label>
     </div>
 </div>
 {% endblock %}
