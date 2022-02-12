@@ -6,7 +6,7 @@ from .. import db
 from ..config import SonarrConfig
 from ..forms import SourceForm
 from ..magnet import get_magnet
-from ..models import Source
+from ..models import DEFAULT_QUALITY, Source
 from ..sonarr import Series, Sonarr
 
 bp = Blueprint("ui", __name__)
@@ -47,7 +47,7 @@ def edit(source_id):
     form = SourceForm(obj=source)
     form.season_choices(series.seasons)
     form.language_choices(sonarr.get_languages())
-    form.quality_choices(source.quality, sonarr.get_qualities())
+    form.quality_choices(sonarr.get_qualities(), source.quality)
 
     if request.method == "POST" and form.validate_on_submit():
         magnet, err = get_magnet(form.url.data, form.cookies.data)
@@ -56,7 +56,7 @@ def edit(source_id):
         else:
             source.url = form.url.data
             source.season = form.season.data
-            source.cookies = form.cookies.data
+            source.cookies = magnet.cookies
             source.quality = form.quality.data
             source.language = form.language.data
             db.session.commit()
@@ -85,6 +85,32 @@ def add():
     return render_template("add.html", series=series)
 
 
-@bp.route("/add/<int:tvdb_id>")
+@bp.route("/add/<int:tvdb_id>", methods=["GET", "POST"])
 def add_source(tvdb_id):
-    pass
+    sonarr_config = SonarrConfig()
+    sonarr = Sonarr(sonarr_config)
+    series = sonarr.get_series(tvdb_id)
+
+    form = SourceForm()
+    form.season_choices(series.seasons)
+    form.season.data = str(series.seasons[-1].season_number)
+    form.language_choices(sonarr.get_languages())
+    form.quality_choices(sonarr.get_qualities())
+    form.quality.data = DEFAULT_QUALITY
+
+    if request.method == "POST" and form.validate_on_submit():
+        magnet, err = get_magnet(form.url.data, form.cookies.data)
+        if err:
+            form.url.errors = [err]
+        else:
+            Source.create(
+                tvdb_id=tvdb_id,
+                url=form.url.data,
+                season=form.season.data,
+                cookies=magnet.cookies,
+                quality=form.quality.data,
+                language=form.language.data,
+            )
+            return redirect(url_for("ui.index"))
+
+    return render_template("add_source.html", form=form, series=series)

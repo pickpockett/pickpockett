@@ -1,17 +1,24 @@
 from typing import List
 
 from flask_wtf import FlaskForm
-from wtforms import SelectField, SubmitField, TextAreaField, validators
+from wtforms import (
+    SelectField,
+    SubmitField,
+    TextAreaField,
+    URLField,
+    validators,
+)
 
+from .models import DEFAULT_QUALITY
 from .sonarr import Language, Quality, Season
 
 
 def strip_filter(value: str):
-    return value.strip()
+    return value.strip() if isinstance(value, str) else value
 
 
 class SourceForm(FlaskForm):
-    url = TextAreaField("URL", [validators.input_required()], [strip_filter])
+    url = URLField("URL", [validators.input_required()], [strip_filter])
     cookies = TextAreaField(
         "Cookies:",
         [validators.optional()],
@@ -50,9 +57,11 @@ class SourceForm(FlaskForm):
             *((language.name, language.name) for language in languages),
         )
 
-    def quality_choices(self, current: str, qualities: List[Quality]):
-        current_quality = (current, current)
+    def quality_choices(
+        self, qualities: List[Quality], current: str = DEFAULT_QUALITY
+    ):
         choices = [(quality.name, quality.name) for quality in qualities]
+        current_quality = (current, current)
         if current_quality not in choices:
             choices.insert(0, current_quality)
         self.quality.choices = choices

@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<a class="btn btn-secondary mb-2" href="{{ url_for('ui.index') }}">Back</a>
 <div class="row text-center">
 {% for s in series %}
     <div class="col-6 col-md-4 col-lg-3 col-xl-2 pb-4">
@@ -13,4 +14,5 @@
     </div>
 {% endfor %}
 </div>
+<a class="btn btn-secondary mb-4" href="{{ url_for('ui.index') }}">Back</a>
 {% endblock %}

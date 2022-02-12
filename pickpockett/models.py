@@ -6,6 +6,8 @@ from .magnet import Magnet
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_QUALITY = "WEBRip-1080p"
+
 
 class Config(db.Model):
     __tablename__ = "config"
@@ -26,9 +28,15 @@ class Source(db.Model):
     datetime = db.Column(
         db.DateTime, nullable=False, server_default="0001-01-01 00:00:00"
     )
-    quality = db.Column(db.Text, nullable=False, server_default="WEBRip-1080p")
+    quality = db.Column(db.Text, nullable=False, default=DEFAULT_QUALITY)
     language = db.Column(db.Text, nullable=False, server_default="")
     error = db.Column(db.Text, nullable=False, server_default="")
+
+    @classmethod
+    def create(cls, **kwargs):
+        obj = cls(**kwargs)
+        db.session.add(obj)
+        db.session.commit()
 
     @property
     def extra(self):
