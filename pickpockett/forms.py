@@ -6,15 +6,20 @@ from wtforms import SelectField, SubmitField, TextAreaField, validators
 from .sonarr import Language, Quality, Season
 
 
+def strip_filter(value: str):
+    return value.strip()
+
+
 class SourceForm(FlaskForm):
-    url = TextAreaField("URL", validators=[validators.input_required()])
+    url = TextAreaField("URL", [validators.input_required()], [strip_filter])
     cookies = TextAreaField(
         "Cookies:",
+        [validators.optional()],
+        [strip_filter],
         description=(
             "(optional) Used for authentication."
             " The value could change between requests"
         ),
-        validators=[validators.optional()],
     )
     season = SelectField(
         "Season:", description="Specify which season the source contains"

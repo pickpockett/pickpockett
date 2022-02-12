@@ -5,6 +5,7 @@ from flask import Blueprint, redirect, render_template, request, url_for
 from .. import db
 from ..config import SonarrConfig
 from ..forms import SourceForm
+from ..magnet import get_magnet
 from ..models import Source
 from ..sonarr import Series, Sonarr
 
@@ -49,15 +50,18 @@ def edit(source_id):
     form.quality_choices(source.quality, sonarr.get_qualities())
 
     if request.method == "POST" and form.validate_on_submit():
-        source.url = form.url.data
-        source.season = form.season.data
-        source.cookies = form.cookies.data
-        source.quality = form.quality.data
-        source.language = form.language.data
-        db.session.commit()
-        return redirect(url_for("ui.index"))
-
-    if source.error:
+        magnet, err = get_magnet(form.url.data, form.cookies.data)
+        if err:
+            form.url.errors = [err]
+        else:
+            source.url = form.url.data
+            source.season = form.season.data
+            source.cookies = form.cookies.data
+            source.quality = form.quality.data
+            source.language = form.language.data
+            db.session.commit()
+            return redirect(url_for("ui.index"))
+    elif source.error:
         form.url.errors = [source.error]
 
     return render_template(

@@ -2,12 +2,11 @@ import logging
 from datetime import datetime, timezone
 from xml.etree import ElementTree as et
 
-import requests
 from flask_sqlalchemy import BaseQuery
 
 from . import db
 from .config import SonarrConfig
-from .magnet import find_magnet_link, hash_from_magnet
+from .magnet import get_magnet
 from .models import Source
 from .sonarr import Sonarr
 
@@ -27,7 +26,6 @@ COMMENTS = "comments"
 COMMENTS_ADD = "commentadd"
 USER = "user"
 NZB_ADD = "nzbadd"
-
 
 logger = logging.getLogger(__name__)
 
@@ -156,53 +154,18 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
         if not source.url:
             continue
 
-        try:
-            magnet_link, cookies = find_magnet_link(source.url, source.cookies)
-        except requests.HTTPError as e:
-            logger.error(e)
-            if e.response is not None:
-                source.error = e.response.reason
-            else:
-                source.error = "HTTP Error"
-            db.session.commit()
-            continue
-        except requests.ConnectionError as e:
-            logger.error(e)
-            source.error = "Connection Error"
-            db.session.commit()
-            continue
-        except Exception as e:
-            logger.error(e)
-            source.error = "Unknown Error"
-            db.session.commit()
-            continue
+        magnet, err = get_magnet(source.url, source.cookies)
+        source.update_error(err)
 
-        if magnet_link is None:
+        if magnet and magnet.url is None:
             logger.error(
                 "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.url
             )
-            source.error = "No magnet link found"
-            db.session.commit()
+            continue
+        elif err:
             continue
 
-        source.error = ""
-        db.session.commit()
-
-        info_hash = hash_from_magnet(magnet_link)
-        if source.hash != info_hash:
-            logger.info(
-                "[tbdbid:%i]: hash update: %r => %r",
-                source.tvdb_id,
-                source.hash,
-                info_hash,
-            )
-            source.hash = info_hash
-            source.datetime = datetime.utcnow()
-            db.session.commit()
-
-        if cookies:
-            source.cookies = cookies
-            db.session.commit()
+        source.update_magnet(magnet)
 
         series = sonarr.get_series(source.tvdb_id)
         episodes = series.get_episodes(source.season, source.datetime)
@@ -221,8 +184,8 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                 ep_name,
                 source.url,
                 source.datetime,
-                magnet_link,
-                info_hash,
+                magnet.url,
+                magnet.hash,
                 tvdbid,
             )
             items.append(item)

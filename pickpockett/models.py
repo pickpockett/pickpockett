@@ -1,4 +1,10 @@
+import logging
+from datetime import datetime
+
 from . import db
+from .magnet import Magnet
+
+logger = logging.getLogger(__name__)
 
 
 class Config(db.Model):
@@ -27,3 +33,19 @@ class Source(db.Model):
     @property
     def extra(self):
         return ", ".join(e for e in (self.language, self.quality) if e)
+
+    def update_magnet(self, magnet: Magnet):
+        if self.hash != magnet.hash:
+            logger.info(
+                "[tbdbid:%i]: hash update: %r => %r",
+                self.tvdb_id,
+                self.hash,
+                magnet.hash,
+            )
+            self.hash = magnet.hash
+            self.datetime = datetime.utcnow()
+            db.session.commit()
+
+    def update_error(self, err):
+        self.error = err or ""
+        db.session.commit()
