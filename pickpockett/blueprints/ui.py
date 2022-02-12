@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from flask import Blueprint, redirect, render_template, url_for
 
+from .. import db
 from ..config import SonarrConfig
 from ..forms import SourceForm
 from ..models import Source
@@ -56,4 +57,6 @@ def edit(source_id):
 
 @bp.route("/delete/<int:source_id>")
 def delete(source_id):
+    Source.query.filter_by(id=source_id).delete()
+    db.session.commit()
     return redirect(url_for("ui.index"))
