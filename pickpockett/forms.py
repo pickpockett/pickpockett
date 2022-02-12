@@ -1,16 +1,29 @@
 from typing import List
 
 from flask_wtf import FlaskForm
-from wtforms import SelectField, TextAreaField, validators
+from wtforms import SelectField, SubmitField, TextAreaField, validators
 
 from .sonarr import Language, Quality, Season
 
 
 class SourceForm(FlaskForm):
     url = TextAreaField("URL", validators=[validators.input_required()])
-    season = SelectField("Season", validators=[validators.input_required()])
-    quality = SelectField("Quality", validators=[validators.optional()])
-    language = SelectField("Language", validators=[validators.optional()])
+    cookies = TextAreaField(
+        "Cookies:",
+        description=(
+            "(optional) Used for authentication."
+            " The value could change between requests"
+        ),
+        validators=[validators.optional()],
+    )
+    season = SelectField(
+        "Season:", description="Specify which season the source contains"
+    )
+    quality = SelectField("Quality:", description="Quality of the source")
+    language = SelectField(
+        "Language:", description='(optional) Empty means "English" for Sonarr'
+    )
+    submit = SubmitField(render_kw={"hidden": True})
 
     def season_choices(self, seasons: List[Season]):
         self.season.choices = (

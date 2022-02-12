@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, render_template, url_for
 
 from ..config import SonarrConfig
 from ..forms import SourceForm
@@ -46,7 +46,14 @@ def edit(source_id):
     form.season_choices(series.seasons)
     form.language_choices(sonarr.get_languages())
     form.quality_choices(source.quality, sonarr.get_qualities())
+    if source.error:
+        form.url.errors = [source.error]
 
     return render_template(
         "edit.html", form=form, series=series, source=source
     )
+
+
+@bp.route("/delete/<int:source_id>")
+def delete(source_id):
+    return redirect(url_for("ui.index"))

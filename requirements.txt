@@ -1,6 +1,7 @@
 Flask==2.0.2
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.0.0
+MarkupSafe==2.0.1
 SQLAlchemy==1.4.31
 WTForms==3.0.1
 beautifulsoup4==4.10.0
