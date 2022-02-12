@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from flask import Blueprint, redirect, render_template, url_for
+from flask import Blueprint, redirect, render_template, request, url_for
 
 from .. import db
 from ..config import SonarrConfig
@@ -35,7 +35,7 @@ def index():
     return render_template("index.html", series_sources=series_sources)
 
 
-@bp.route("/edit/<int:source_id>")
+@bp.route("/edit/<int:source_id>", methods=["GET", "POST"])
 def edit(source_id):
     source = Source.query.get(source_id)
 
@@ -47,6 +47,16 @@ def edit(source_id):
     form.season_choices(series.seasons)
     form.language_choices(sonarr.get_languages())
     form.quality_choices(source.quality, sonarr.get_qualities())
+
+    if request.method == "POST" and form.validate_on_submit():
+        source.url = form.url.data
+        source.season = form.season.data
+        source.cookies = form.cookies.data
+        source.quality = form.quality.data
+        source.language = form.language.data
+        db.session.commit()
+        return redirect(url_for("ui.index"))
+
     if source.error:
         form.url.errors = [source.error]
 
