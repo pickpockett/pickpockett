@@ -21,6 +21,8 @@ def init_app():
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
+    app.config["WTF_CSRF_ENABLED"] = False
+
     app.config["BOOTSTRAP_SERVE_LOCAL"] = True
     bootstrap.init_app(app)
 

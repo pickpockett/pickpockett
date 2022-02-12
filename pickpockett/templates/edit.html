@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% from "bootstrap5/form.html" import render_form %}
+
+{% block content %}
+<h1>
+    <img class="poster" src="{{ series.poster }}" alt="{{ series.title }}" />
+    {{ series.title }} <i class="text-muted">({{ series.year }})</i>
+</h1>
+{{ render_form(form, form_type='horizontal') }}
+{% endblock %}

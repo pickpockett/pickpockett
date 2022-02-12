@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from flask import Blueprint, render_template
 
 from ..config import SonarrConfig
+from ..forms import SourceForm
 from ..models import Source
 from ..sonarr import Series, Sonarr
 
@@ -20,11 +21,10 @@ def _sort_key(s: SeriesSource):
 
 
 @bp.route("/")
-def ui():
+def index():
     sonarr_config = SonarrConfig()
-    sonnar = Sonarr(sonarr_config)
-
-    series = sonnar.series()
+    sonarr = Sonarr(sonarr_config)
+    series = sonarr.series()
 
     series_sources = sorted(
         [SeriesSource(series[s.tvdb_id], s) for s in Source.query],
@@ -32,3 +32,21 @@ def ui():
     )
 
     return render_template("index.html", series_sources=series_sources)
+
+
+@bp.route("/edit/<int:source_id>")
+def edit(source_id):
+    source = Source.query.get(source_id)
+
+    sonarr_config = SonarrConfig()
+    sonarr = Sonarr(sonarr_config)
+    series = sonarr.get_series(source.tvdb_id)
+
+    form = SourceForm(obj=source)
+    form.season_choices(series.seasons)
+    form.language_choices(sonarr.get_languages())
+    form.quality_choices(source.quality, sonarr.get_qualities())
+
+    return render_template(
+        "edit.html", form=form, series=series, source=source
+    )

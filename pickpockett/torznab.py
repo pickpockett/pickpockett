@@ -153,13 +153,11 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
     sonarr = Sonarr(sonarr_config)
 
     for source in sources:
-        if not source.link:
+        if not source.url:
             continue
 
         try:
-            magnet_link, cookies = find_magnet_link(
-                source.link, source.cookies
-            )
+            magnet_link, cookies = find_magnet_link(source.url, source.cookies)
         except requests.HTTPError as e:
             logger.error(e)
             if e.response is not None:
@@ -181,7 +179,7 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
 
         if magnet_link is None:
             logger.error(
-                "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.link
+                "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.url
             )
             source.error = "No magnet link found"
             db.session.commit()
@@ -221,7 +219,7 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                 ep_name += f" [{extra}]"
             item = _item(
                 ep_name,
-                source.link,
+                source.url,
                 source.datetime,
                 magnet_link,
                 info_hash,

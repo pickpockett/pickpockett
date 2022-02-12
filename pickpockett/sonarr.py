@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict, List, Literal
+from itertools import chain
+from typing import Dict, List, Literal, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -16,6 +17,13 @@ class Image(BaseModel):
         fields = {"cover_type": "coverType"}
 
 
+class Season(BaseModel):
+    season_number: int
+
+    class Config:
+        fields = {"season_number": "seasonNumber"}
+
+
 class Series(BaseModel):
     id: int
     title: str
@@ -23,6 +31,7 @@ class Series(BaseModel):
     tvdb_id: int
     images: List[Image]
     year: int
+    seasons: List[Season]
     sonarr: Sonarr
 
     class Config:
@@ -67,6 +76,36 @@ class Episode(BaseModel):
         return air_date_utc.replace(tzinfo=None)
 
 
+class Language(BaseModel):
+    name: str
+
+
+class LanguageItem(BaseModel):
+    language: Language
+
+
+class LanguageProfile(BaseModel):
+    languages: List[LanguageItem]
+
+
+class Quality(BaseModel):
+    id: int
+    name: str
+
+
+class QualityItem(BaseModel):
+    quality: Quality
+
+
+class QualityGroup(BaseModel):
+    items: List[QualityItem]
+    quality: Optional[Quality] = None
+
+
+class QualityProfile(BaseModel):
+    items: List[QualityGroup]
+
+
 class Sonarr:
     def __init__(self, config):
         self.url = config.url
@@ -99,6 +138,37 @@ class Sonarr:
     def get_series(self, tvdb_id: int) -> Series:
         series = self.series()
         return series[tvdb_id]
+
+    def get_languages(self):
+        language_profile = LanguageProfile.parse_obj(
+            self._get("v3/languageprofile/schema")
+        )
+        return sorted(
+            (
+                language_item.language
+                for language_item in language_profile.languages
+                if language_item.language.name != "Unknown"
+            ),
+            key=lambda language: language.name,
+        )
+
+    def get_qualities(self):
+        quality_profile = QualityProfile.parse_obj(
+            self._get("v3/qualityprofile/schema")
+        )
+        qualities = [
+            quality
+            for quality in chain(
+                *(
+                    (quality.quality for quality in quality_group.items)
+                    if quality_group.items
+                    else [quality_group.quality]
+                    for quality_group in quality_profile.items
+                )
+            )
+            if quality.name != "Unknown"
+        ]
+        return qualities
 
 
 Series.update_forward_refs()
