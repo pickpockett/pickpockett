@@ -30,7 +30,7 @@ def init_app():
     app.config["BOOTSTRAP_SERVE_LOCAL"] = True
     bootstrap.init_app(app)
 
-    data_dir = Path(os.environ.get("data", os.getcwd()))
+    data_dir = Path(os.environ.get("DATA_DIR", os.getcwd()))
     config.path = data_dir / "config.json"
 
     db_uri = "sqlite:///" + str(data_dir / __name__) + ".db"
