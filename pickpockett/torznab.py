@@ -4,10 +4,9 @@ from xml.etree import ElementTree as et
 
 from flask_sqlalchemy import BaseQuery
 
-from . import db
 from .config import SonarrConfig
 from .magnet import get_magnet
-from .models import Source
+from .models import ALL_SEASONS, ALL_SEASONS_NO_SPECIALS, Source
 from .sonarr import Sonarr
 
 CAPS = "caps"
@@ -133,7 +132,11 @@ def _query(q, tvdb_id, season):
     if tvdb_id:
         query = query.filter_by(tvdb_id=tvdb_id)
         if season:
-            query = query.filter_by(season=season)
+            query = query.filter(
+                Source.season.in_(
+                    [ALL_SEASONS, ALL_SEASONS_NO_SPECIALS, season]
+                )
+            )
 
     return query.all()
 
@@ -146,9 +149,6 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
     sonarr = Sonarr(sonarr_config)
 
     for source in sources:
-        if not source.url:
-            continue
-
         magnet, err = get_magnet(source.url, source.cookies)
         source.update_error(err)
 

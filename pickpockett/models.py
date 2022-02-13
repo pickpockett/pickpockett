@@ -6,6 +6,8 @@ from .magnet import Magnet
 
 logger = logging.getLogger(__name__)
 
+ALL_SEASONS = -1
+ALL_SEASONS_NO_SPECIALS = -2
 DEFAULT_QUALITY = "WEBRip-1080p"
 
 
@@ -21,7 +23,9 @@ class Source(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     tvdb_id = db.Column(db.Integer, nullable=False)
-    season = db.Column(db.Integer, nullable=False, server_default="-1")
+    season: db.Column = db.Column(
+        db.Integer, nullable=False, server_default=str(ALL_SEASONS)
+    )
     url = db.Column(db.Text, nullable=False)
     cookies = db.Column(db.Text, nullable=False, server_default="")
     hash = db.Column(db.String(40), nullable=False, server_default="")

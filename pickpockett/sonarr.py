@@ -8,6 +8,8 @@ from urllib.parse import urljoin
 import requests
 from pydantic import BaseModel, parse_obj_as, validator
 
+from pickpockett.models import ALL_SEASONS, ALL_SEASONS_NO_SPECIALS
+
 
 class Image(BaseModel):
     cover_type: Literal["banner", "fanart", "poster"]
@@ -49,7 +51,12 @@ class Series(BaseModel):
         season_episode_list = [
             ep
             for ep in episode
-            if ep.season_number == season
+            if (
+                season == ALL_SEASONS
+                or season == ALL_SEASONS_NO_SPECIALS
+                and ep.season_number > 0
+                or ep.season_number == season
+            )
             and ep.air_date_utc is not None
             and (
                 ep.has_file
