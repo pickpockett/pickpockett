@@ -132,11 +132,6 @@ def _query(q, tvdb_id, season):
 
     if tvdb_id:
         query = query.filter_by(tvdb_id=tvdb_id)
-        if not db.session.query(query.exists()).scalar():
-            source = Source(tvdb_id=tvdb_id)
-            db.session.add(source)
-            db.session.commit()
-
         if season:
             query = query.filter_by(season=season)
 
