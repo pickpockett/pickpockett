@@ -69,7 +69,7 @@ def edit(source_id):
     )
 
 
-@bp.route("/delete/<int:source_id>")
+@bp.route("/edit/<int:source_id>/delete", methods=["POST"])
 def delete(source_id):
     Source.query.filter_by(id=source_id).delete()
     db.session.commit()
