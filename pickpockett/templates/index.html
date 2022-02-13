@@ -2,7 +2,7 @@
 
 {% block content %}
 <a class="btn btn-success" href="{{ url_for('ui.add') }}">Add</a>
-<table class="table table-hover">
+<table class="table table-hover align-middle">
 <thead>
     <tr>
         <th>Title</th>
@@ -14,7 +14,7 @@
 {% for ss in series_sources %}
     <tr{% if ss.source.error %} class="table-danger"{% endif %}>
         <td>
-            <img class="icon px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
+            <img class="poster px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
             <a class="px-2" href="{{ url_for('ui.edit', source_id=ss.source.id) }}">{{ ss.series.title }}</a>
         </td>
         <td>{{ ss.source.season }}</td>
