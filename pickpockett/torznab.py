@@ -138,12 +138,12 @@ def _query(q, tvdb_id, season):
 
 
 def tv_search(q=None, tvdbid=None, season=None, **_):
-    items = []
     sources = _query(q, tvdbid, season)
 
     sonarr_config = SonarrConfig()
     sonarr = Sonarr(sonarr_config)
 
+    items = []
     for source in sources:
         magnet, err = get_magnet(source.url, source.cookies)
         source.update_error(err)
@@ -157,9 +157,9 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
             continue
 
         source.update_magnet(magnet)
-
         series = sonarr.get_series(source.tvdb_id)
-        episodes = series.get_episodes(source.season, source.datetime)
+        season_number = source.season if season is None else int(season)
+        episodes = series.get_episodes(season_number, source.datetime)
 
         for ep in episodes:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"

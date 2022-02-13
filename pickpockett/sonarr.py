@@ -53,16 +53,11 @@ class Series(BaseModel):
             for ep in episode
             if (
                 ep.monitored
-                and season == ALL_SEASONS
-                or ep.season_number == season
+                and (season == ALL_SEASONS or ep.season_number == season)
             )
             and ep.air_date_utc is not None
-            and (
-                ep.has_file
-                or dt is not None
-                and ep.air_date_utc < dt
-                and not ep.has_file
-            )
+            and dt is not None
+            and ep.air_date_utc < dt
         ]
         return season_episode_list
 
