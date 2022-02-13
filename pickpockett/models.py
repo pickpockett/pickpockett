@@ -22,12 +22,10 @@ class Source(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tvdb_id = db.Column(db.Integer, nullable=False)
     season = db.Column(db.Integer, nullable=False, server_default="-1")
-    url = db.Column(db.Text, nullable=False, server_default="")
+    url = db.Column(db.Text, nullable=False)
     cookies = db.Column(db.Text, nullable=False, server_default="")
     hash = db.Column(db.String(40), nullable=False, server_default="")
-    datetime = db.Column(
-        db.DateTime, nullable=False, server_default="0001-01-01 00:00:00"
-    )
+    datetime = db.Column(db.DateTime)
     quality = db.Column(db.Text, nullable=False, default=DEFAULT_QUALITY)
     language = db.Column(db.Text, nullable=False, server_default="")
     error = db.Column(db.Text, nullable=False, server_default="")
@@ -57,3 +55,19 @@ class Source(db.Model):
     def update_error(self, err):
         self.error = err or ""
         db.session.commit()
+
+    @property
+    def updated(self):
+        if self.datetime is None:
+            return ""
+
+        days = (datetime.utcnow() - self.datetime).days
+
+        if days == 0:
+            return "Today"
+        elif days == 1:
+            return "Yesterday"
+        elif days < 0:
+            return "O_o"
+        else:
+            return f"{days} days ago"

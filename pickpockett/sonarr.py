@@ -51,7 +51,12 @@ class Series(BaseModel):
             for ep in episode
             if ep.season_number == season
             and ep.air_date_utc is not None
-            and (ep.has_file or ep.air_date_utc < dt and not ep.has_file)
+            and (
+                ep.has_file
+                or dt is not None
+                and ep.air_date_utc < dt
+                and not ep.has_file
+            )
         ]
         return season_episode_list
 
