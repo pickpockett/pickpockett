@@ -4,10 +4,9 @@ from xml.etree import ElementTree as et
 
 from flask_sqlalchemy import BaseQuery
 
-from .config import SonarrConfig
 from .magnet import get_magnet
 from .models import ALL_SEASONS, Source
-from .sonarr import Sonarr
+from .sonarr import get_sonarr
 
 CAPS = "caps"
 REGISTER = "register"
@@ -137,13 +136,17 @@ def _query(q, tvdb_id, season):
     return query.all()
 
 
-def tv_search(q=None, tvdbid=None, season=None, **_):
-    sources = _query(q, tvdbid, season)
+def _get_items(q, tvdb_id, season):
+    if (sonarr := get_sonarr()) is None:
+        logger.warning(
+            "PickPockett is not configured yet,"
+            " so returning a stub to pass the Sonarr test"
+        )
+        return [_stub()]
 
-    sonarr_config = SonarrConfig()
-    sonarr = Sonarr(sonarr_config)
-
+    sources = _query(q, tvdb_id, season)
     items = []
+
     for source in sources:
         magnet, err = get_magnet(source.url, source.cookies)
         source.update_error(err)
@@ -177,16 +180,22 @@ def tv_search(q=None, tvdbid=None, season=None, **_):
                 source.datetime,
                 magnet.url,
                 magnet.hash,
-                tvdbid,
+                tvdb_id,
             )
             items.append(item)
 
-    if not (q or tvdbid or items):
+    if not (q or tvdb_id or items):
         logger.info(
             "no search criteria and no items,"
             " so returning a stub to pass the Sonarr test"
         )
-        items.append(_stub())
+        return [_stub()]
+
+    return items
+
+
+def tv_search(q=None, tvdbid=None, season=None, **_):
+    items = _get_items(q, tvdbid, season)
 
     root = et.Element(
         "rss",

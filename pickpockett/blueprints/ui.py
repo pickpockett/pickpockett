@@ -2,12 +2,11 @@ from dataclasses import dataclass
 
 from flask import Blueprint, redirect, render_template, request, url_for
 
-from .. import db
-from ..config import SonarrConfig
-from ..forms import SourceForm
+from .. import config, db
+from ..forms import ConfigForm, SourceForm
 from ..magnet import get_magnet
 from ..models import DEFAULT_QUALITY, Source
-from ..sonarr import Series, Sonarr
+from ..sonarr import Series, get_sonarr
 
 bp = Blueprint("ui", __name__)
 
@@ -24,8 +23,9 @@ def _sort_key(s: SeriesSource):
 
 @bp.route("/")
 def index():
-    sonarr_config = SonarrConfig()
-    sonarr = Sonarr(sonarr_config)
+    if (sonarr := get_sonarr()) is None:
+        return redirect(url_for("ui.settings"))
+
     series = sonarr.series_dict()
 
     series_sources = sorted(
@@ -38,10 +38,10 @@ def index():
 
 @bp.route("/edit/<int:source_id>", methods=["GET", "POST"])
 def edit(source_id):
-    source = Source.query.get(source_id)
+    if (sonarr := get_sonarr()) is None:
+        return redirect(url_for("ui.settings"))
 
-    sonarr_config = SonarrConfig()
-    sonarr = Sonarr(sonarr_config)
+    source = Source.query.get(source_id)
     series = sonarr.get_series(source.tvdb_id)
 
     form = SourceForm(obj=source)
@@ -78,8 +78,9 @@ def delete(source_id):
 
 @bp.route("/add")
 def add():
-    sonarr_config = SonarrConfig()
-    sonarr = Sonarr(sonarr_config)
+    if (sonarr := get_sonarr()) is None:
+        return redirect(url_for("ui.settings"))
+
     series = sonarr.series_sorted()
 
     return render_template("add.html", series=series)
@@ -87,8 +88,9 @@ def add():
 
 @bp.route("/add/<int:tvdb_id>", methods=["GET", "POST"])
 def add_source(tvdb_id):
-    sonarr_config = SonarrConfig()
-    sonarr = Sonarr(sonarr_config)
+    if (sonarr := get_sonarr()) is None:
+        return redirect(url_for("ui.settings"))
+
     series = sonarr.get_series(tvdb_id)
 
     form = SourceForm()
@@ -114,3 +116,15 @@ def add_source(tvdb_id):
             return redirect(url_for("ui.index"))
 
     return render_template("add_source.html", form=form, series=series)
+
+
+@bp.route("/settings", methods=["GET", "POST"])
+def settings():
+    conf = config.load()
+    form = ConfigForm(obj=conf)
+
+    if request.method == "POST" and form.validate_on_submit():
+        config.save(form.data)
+        return redirect(url_for("ui.index"))
+
+    return render_template("settings.html", form=form)

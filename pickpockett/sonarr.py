@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from itertools import chain
 from typing import Dict, List, Literal, Optional
@@ -8,7 +9,10 @@ from urllib.parse import urljoin
 import requests
 from pydantic import BaseModel, parse_obj_as, validator
 
-from pickpockett.models import ALL_SEASONS
+from . import config
+from .models import ALL_SEASONS
+
+logger = logging.getLogger(__name__)
 
 
 class Image(BaseModel):
@@ -191,3 +195,8 @@ class Sonarr:
 
 
 Series.update_forward_refs()
+
+
+def get_sonarr():
+    if conf := config.load():
+        return Sonarr(conf.sonarr)

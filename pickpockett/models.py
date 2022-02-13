@@ -10,13 +10,6 @@ ALL_SEASONS = -1
 DEFAULT_QUALITY = "WEBRip-1080p"
 
 
-class Config(db.Model):
-    __tablename__ = "config"
-
-    name = db.Column(db.Text, primary_key=True)
-    value = db.Column(db.Text)
-
-
 class Source(db.Model):
     __tablename__ = "sources"
 

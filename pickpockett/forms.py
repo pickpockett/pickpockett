@@ -2,7 +2,9 @@ from typing import List
 
 from flask_wtf import FlaskForm
 from wtforms import (
+    FormField,
     SelectField,
+    StringField,
     SubmitField,
     TextAreaField,
     URLField,
@@ -20,7 +22,7 @@ def strip_filter(value: str):
 class SourceForm(FlaskForm):
     url = URLField("URL", [validators.input_required()], [strip_filter])
     cookies = TextAreaField(
-        "Cookies:",
+        "Cookies",
         [validators.optional()],
         [strip_filter],
         description=(
@@ -29,17 +31,17 @@ class SourceForm(FlaskForm):
         ),
     )
     season = SelectField(
-        "Season:", description="Specify which season the source contains"
+        "Season", description="Specify which season the source contains"
     )
-    quality = SelectField("Quality:", description="Quality of the source")
+    quality = SelectField("Quality", description="Quality of the source")
     language = SelectField(
-        "Language:", description='(optional) Empty means "English" for Sonarr'
+        "Language", description='(optional) Empty means "English" for Sonarr'
     )
     submit = SubmitField(render_kw={"hidden": True})
 
     def season_choices(self, seasons: List[Season]):
         self.season.choices = (
-            (-1, "All Seasons"),
+            (ALL_SEASONS, "All Seasons"),
             *(
                 (
                     s.season_number,
@@ -65,3 +67,15 @@ class SourceForm(FlaskForm):
         if current_quality not in choices:
             choices.insert(0, current_quality)
         self.quality.choices = choices
+
+
+class SonarrConfigForm(FlaskForm):
+    url = URLField("URL", [validators.input_required()], [strip_filter])
+    apikey = StringField(
+        "API Key", [validators.input_required()], [strip_filter]
+    )
+
+
+class ConfigForm(FlaskForm):
+    sonarr = FormField(SonarrConfigForm)
+    submit = SubmitField(render_kw={"hidden": True})

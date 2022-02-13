@@ -13,7 +13,7 @@
     </form>
     <div>
         <a class="btn btn-secondary" href="{{ url_for('ui.index') }}">Cancel</a>
-        <label class="btn btn-primary" for="submit">Save</label>
+        <label class="btn btn-primary" for="{{ form.submit.id }}">Save</label>
     </div>
 </div>
 {% endblock %}
