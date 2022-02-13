@@ -65,7 +65,7 @@ class Source(db.Model):
         if self.datetime is None:
             return ""
 
-        days = (datetime.utcnow() - self.datetime).days
+        days = (datetime.utcnow().date() - self.datetime.date()).days
 
         if days == 0:
             return "Today"
