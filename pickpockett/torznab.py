@@ -6,7 +6,7 @@ from flask_sqlalchemy import BaseQuery
 
 from .config import SonarrConfig
 from .magnet import get_magnet
-from .models import ALL_SEASONS, ALL_SEASONS_NO_SPECIALS, Source
+from .models import ALL_SEASONS, Source
 from .sonarr import Sonarr
 
 CAPS = "caps"
@@ -132,11 +132,7 @@ def _query(q, tvdb_id, season):
     if tvdb_id:
         query = query.filter_by(tvdb_id=tvdb_id)
         if season:
-            query = query.filter(
-                Source.season.in_(
-                    [ALL_SEASONS, ALL_SEASONS_NO_SPECIALS, season]
-                )
-            )
+            query = query.filter(Source.season.in_([ALL_SEASONS, season]))
 
     return query.all()
 

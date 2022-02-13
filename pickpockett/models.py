@@ -7,7 +7,6 @@ from .magnet import Magnet
 logger = logging.getLogger(__name__)
 
 ALL_SEASONS = -1
-ALL_SEASONS_NO_SPECIALS = -2
 DEFAULT_QUALITY = "WEBRip-1080p"
 
 

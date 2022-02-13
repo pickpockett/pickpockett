@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 import requests
 from pydantic import BaseModel, parse_obj_as, validator
 
-from pickpockett.models import ALL_SEASONS, ALL_SEASONS_NO_SPECIALS
+from pickpockett.models import ALL_SEASONS
 
 
 class Image(BaseModel):
@@ -52,9 +52,8 @@ class Series(BaseModel):
             ep
             for ep in episode
             if (
-                season == ALL_SEASONS
-                or season == ALL_SEASONS_NO_SPECIALS
-                and ep.season_number > 0
+                ep.monitored
+                and season == ALL_SEASONS
                 or ep.season_number == season
             )
             and ep.air_date_utc is not None
@@ -73,6 +72,7 @@ class Episode(BaseModel):
     episode_number: int
     air_date_utc: datetime = None
     has_file: bool
+    monitored: bool
 
     class Config:
         fields = {
@@ -83,7 +83,7 @@ class Episode(BaseModel):
         }
 
     @validator("air_date_utc")
-    def remove_tzinfo(cls, air_date_utc: datetime):
+    def remove_tz(cls, air_date_utc: datetime):
         return air_date_utc.replace(tzinfo=None)
 
 

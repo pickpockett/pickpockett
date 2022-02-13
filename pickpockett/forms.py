@@ -9,7 +9,7 @@ from wtforms import (
     validators,
 )
 
-from .models import ALL_SEASONS, ALL_SEASONS_NO_SPECIALS, DEFAULT_QUALITY
+from .models import ALL_SEASONS, DEFAULT_QUALITY
 from .sonarr import Language, Quality, Season
 
 
@@ -38,18 +38,18 @@ class SourceForm(FlaskForm):
     submit = SubmitField(render_kw={"hidden": True})
 
     def season_choices(self, seasons: List[Season]):
-        choices = ((ALL_SEASONS, "All Seasons"),)
-        for season in seasons:
-            if season.season_number == 0:
-                choices += (
-                    (ALL_SEASONS_NO_SPECIALS, "All Seasons (w/o Specials)"),
+        self.season.choices = (
+            (-1, "All Seasons"),
+            *(
+                (
+                    s.season_number,
+                    f"Season {s.season_number}"
+                    if s.season_number
+                    else "Specials",
                 )
-                season_title = "Specials"
-            else:
-                season_title = f"Season {season.season_number}"
-            choices += ((season.season_number, season_title),)
-
-        self.season.choices = choices
+                for s in seasons
+            ),
+        )
 
     def language_choices(self, languages: List[Language]):
         self.language.choices = (
