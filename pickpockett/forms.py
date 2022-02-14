@@ -35,7 +35,7 @@ class SourceForm(FlaskForm):
     )
     quality = SelectField("Quality", description="Quality of the source")
     language = SelectField(
-        "Language", description='(optional) Empty means "English" for Sonarr'
+        "Language", description='(optional) Empty means "English" to Sonarr'
     )
     submit = SubmitField(render_kw={"hidden": True})
 
