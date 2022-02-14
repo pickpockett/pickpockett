@@ -162,15 +162,14 @@ def _get_items(q, tvdb_id, season):
         source.update_magnet(magnet)
         series = sonarr.get_series(source.tvdb_id)
         season_number = source.season if season is None else int(season)
-        episodes = series.get_episodes(season_number, source.datetime)
+        missing = series.get_missing(season_number, source.datetime)
 
-        for ep in episodes:
+        for ep in missing:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
             ep_name = f"{series.title} {ep_repr}"
-            if not ep.has_file:
-                logger.info(
-                    "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
-                )
+            logger.info(
+                "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
+            )
 
             if extra := source.extra:
                 ep_name += f" [{extra}]"
