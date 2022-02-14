@@ -1,0 +1,17 @@
+image: pickpockett/pickpockett:latest
+manifests:
+  -
+    image: pickpockett/pickpockett:amd64-latest
+    platform:
+      architecture: amd64
+      os: linux
+  -
+    image: pickpockett/pickpockett:arm64-latest
+    platform:
+      architecture: arm64
+      os: linux
+  -
+    image: pickpockett/pickpockett:arm32-latest
+    platform:
+      architecture: arm
+      os: linux
