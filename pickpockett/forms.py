@@ -20,7 +20,12 @@ def strip_filter(value: str):
 
 
 class SourceForm(FlaskForm):
-    url = URLField("URL", [validators.input_required()], [strip_filter])
+    url = URLField(
+        "URL",
+        [validators.input_required()],
+        [strip_filter],
+        description="Where to find a magnet link to download",
+    )
     cookies = TextAreaField(
         "Cookies",
         [validators.optional()],
