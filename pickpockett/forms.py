@@ -36,7 +36,12 @@ class SourceForm(FlaskForm):
         description="Specify which season the source contains",
     )
     quality = SelectField(
-        "Quality", default=DEFAULT_QUALITY, description="Quality of the source"
+        "Quality",
+        default=DEFAULT_QUALITY,
+        description=(
+            "Quality of the source. Might not match the source"
+            " but must be equal to or better than existing files"
+        ),
     )
     language = SelectField(
         "Language", description='(optional) Empty means "English" to Sonarr'
