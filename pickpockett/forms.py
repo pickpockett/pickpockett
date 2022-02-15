@@ -48,7 +48,7 @@ class SourceForm(FlaskForm):
         default=DEFAULT_QUALITY,
         description=(
             "Quality of the source. Might not match the source"
-            " but must be equal to or better than existing files"
+            " but must match the quality profile of the show in Sonarr"
         ),
     )
     language = SelectField(
