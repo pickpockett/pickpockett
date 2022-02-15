@@ -24,7 +24,7 @@ class SourceForm(FlaskForm):
         "URL",
         [validators.input_required()],
         [strip_filter],
-        description="Where to find a magnet link to download",
+        description="Where to find a magnet link",
     )
     cookies = TextAreaField(
         "Cookies",
