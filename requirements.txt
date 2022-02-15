@@ -1,9 +1,11 @@
 Flask==2.0.3
+Flask-Migrate==3.1.0
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.0.0
 MarkupSafe==2.0.1
 SQLAlchemy==1.4.31
 WTForms==3.0.1
+alembic==1.7.6
 beautifulsoup4==4.10.0
 bootstrap-flask==2.0.1
 pydantic==1.9.0

@@ -4,15 +4,17 @@ from pathlib import Path
 
 from flask import Flask
 from flask_bootstrap import Bootstrap5
+from flask_migrate import Migrate, upgrade
 from flask_sqlalchemy import SQLAlchemy
 
 from .configuration import Config, ConfigManager
 
 logging.basicConfig(level=logging.INFO)
 
-db = SQLAlchemy()
 bootstrap = Bootstrap5()
 config = ConfigManager()
+db = SQLAlchemy()
+migrate = Migrate()
 
 
 def init_app():
@@ -38,7 +40,10 @@ def init_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
-    db.create_all(app=app)
+    migrate.init_app(app, db)
+
+    with app.app_context():
+        upgrade()
 
     return app
 
