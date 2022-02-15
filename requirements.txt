@@ -10,6 +10,7 @@ WTForms==3.0.1
 alembic==1.7.6
 beautifulsoup4==4.10.0
 bootstrap-flask==2.0.1
+cachetools==5.0.0
 pydantic==1.9.0
 requests==2.27.1
 waitress==2.0.0

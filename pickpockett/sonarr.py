@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import chain
 from typing import Dict, List, Literal, Optional
 from urllib.parse import urljoin
 
 import requests
+from cachetools import TTLCache
 from pydantic import BaseModel, parse_obj_as, validator
 
 from . import config
@@ -117,10 +118,25 @@ class QualityProfile(BaseModel):
     items: List[QualityGroup]
 
 
+class SonarrProfileSchemaCache(TTLCache):
+    def __init__(self):
+        super().__init__(2, ttl=timedelta(minutes=15).total_seconds())
+
+    def get_profile(self, key, getter):
+        try:
+            return self[key]
+        except KeyError:
+            profile = getter(f"v3/{key}profile/schema")
+            self[key] = profile
+            return profile
+
+
 class Sonarr:
-    def __init__(self, config):
-        self.url = config.url
-        self.apikey = config.apikey
+    profile_cache = SonarrProfileSchemaCache()
+
+    def __init__(self, sonarr_config):
+        self.url = sonarr_config.url
+        self.apikey = sonarr_config.apikey
 
     def _url(self, endpoint):
         return urljoin(self.url, f"api/{endpoint}")
@@ -165,7 +181,7 @@ class Sonarr:
 
     def get_languages(self):
         language_profile = LanguageProfile.parse_obj(
-            self._get("v3/languageprofile/schema")
+            self.profile_cache.get_profile("language", self._get)
         )
         return sorted(
             (
@@ -178,7 +194,7 @@ class Sonarr:
 
     def get_qualities(self):
         quality_profile = QualityProfile.parse_obj(
-            self._get("v3/qualityprofile/schema")
+            self.profile_cache.get_profile("quality", self._get)
         )
         qualities = [
             quality
