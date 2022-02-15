@@ -27,7 +27,10 @@ class SourceForm(FlaskForm):
         [strip_filter],
         description=(
             "(optional) Used for authentication."
-            " The value could change between requests"
+            " The value can change between requests."
+            ' Here is an <a href="https://chrome.google.com/webstore/detail'
+            '/copy-cookies/jcbpglbplpblnagieibnemmkiamekcdg">extension</a>'
+            " to copy cookies of a web page"
         ),
     )
     season = SelectField(
