@@ -3,10 +3,13 @@ Flask-Migrate==3.1.0
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.0.0
 MarkupSafe==2.0.1
+Paste==3.5.0
 SQLAlchemy==1.4.31
+Werkzeug==2.0.3
 WTForms==3.0.1
 alembic==1.7.6
 beautifulsoup4==4.10.0
 bootstrap-flask==2.0.1
 pydantic==1.9.0
 requests==2.27.1
+waitress==2.0.0
