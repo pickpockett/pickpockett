@@ -95,10 +95,8 @@ def add_source(tvdb_id):
 
     form = SourceForm()
     form.season_choices(series.seasons)
-    form.season.data = str(series.seasons[-1].season_number)
     form.language_choices(sonarr.get_languages())
     form.quality_choices(sonarr.get_qualities())
-    form.quality.data = DEFAULT_QUALITY
 
     if request.method == "POST" and form.validate_on_submit():
         magnet, err = get_magnet(form.url.data, form.cookies.data)
@@ -114,6 +112,9 @@ def add_source(tvdb_id):
                 language=form.language.data,
             )
             return redirect(url_for("ui.index"))
+
+    form.season.data = series.seasons[-1].season_number
+    form.quality.data = DEFAULT_QUALITY
 
     return render_template("add_source.html", form=form, series=series)
 

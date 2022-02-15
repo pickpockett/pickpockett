@@ -31,7 +31,9 @@ class SourceForm(FlaskForm):
         ),
     )
     season = SelectField(
-        "Season", description="Specify which season the source contains"
+        "Season",
+        coerce=int,
+        description="Specify which season the source contains",
     )
     quality = SelectField("Quality", description="Quality of the source")
     language = SelectField(
