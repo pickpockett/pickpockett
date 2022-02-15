@@ -10,6 +10,8 @@
     <tr>
         <th>Title</th>
         <th>Season</th>
+        <th>Quality</th>
+        <th>Language</th>
         <th>Updated</th>
     </tr>
 </thead>
@@ -21,6 +23,8 @@
             <a class="px-2" href="{{ url_for('ui.edit', source_id=ss.source.id) }}">{{ ss.series.title }}</a>
         </td>
         <td>{{ ss.source.season }}</td>
+        <td>{{ ss.source.quality }}</td>
+        <td>{{ ss.source.language }}</td>
         <td>{{ ss.source.updated }}</td>
     </tr>
 {% endfor %}
