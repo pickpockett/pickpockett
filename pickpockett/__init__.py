@@ -1,5 +1,5 @@
-import logging
 import os
+from multiprocessing import Process
 from pathlib import Path
 
 from flask import Flask
@@ -8,8 +8,6 @@ from flask_migrate import Migrate, upgrade
 from flask_sqlalchemy import SQLAlchemy
 
 from .configuration import Config, ConfigManager
-
-logging.basicConfig(level=logging.INFO)
 
 bootstrap = Bootstrap5()
 config = ConfigManager()
@@ -42,8 +40,13 @@ def init_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    with app.app_context():
-        upgrade()
+    def db_upgrade(app):
+        with app.app_context():
+            upgrade()
+
+    upgrade_process = Process(target=db_upgrade, args=(app,))
+    upgrade_process.start()
+    upgrade_process.join()
 
     return app
 
