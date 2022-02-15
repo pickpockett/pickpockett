@@ -35,7 +35,9 @@ class SourceForm(FlaskForm):
         coerce=int,
         description="Specify which season the source contains",
     )
-    quality = SelectField("Quality", description="Quality of the source")
+    quality = SelectField(
+        "Quality", default=DEFAULT_QUALITY, description="Quality of the source"
+    )
     language = SelectField(
         "Language", description='(optional) Empty means "English" to Sonarr'
     )
@@ -54,6 +56,7 @@ class SourceForm(FlaskForm):
                 for s in seasons
             ),
         )
+        self.season.data = seasons[-1].season_number
 
     def language_choices(self, languages: List[Language]):
         self.language.choices = (
@@ -61,11 +64,9 @@ class SourceForm(FlaskForm):
             *((language.name, language.name) for language in languages),
         )
 
-    def quality_choices(
-        self, qualities: List[Quality], current: str = DEFAULT_QUALITY
-    ):
+    def quality_choices(self, qualities: List[Quality]):
         choices = [(quality.name, quality.name) for quality in qualities]
-        current_quality = (current, current)
+        current_quality = (self.quality.data, self.quality.data)
         if current_quality not in choices:
             choices.insert(0, current_quality)
         self.quality.choices = choices

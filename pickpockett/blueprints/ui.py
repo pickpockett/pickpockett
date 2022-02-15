@@ -5,7 +5,7 @@ from flask import Blueprint, redirect, render_template, request, url_for
 from .. import config, db
 from ..forms import ConfigForm, SourceForm
 from ..magnet import get_magnet
-from ..models import DEFAULT_QUALITY, Source
+from ..models import Source
 from ..sonarr import Series, get_sonarr
 
 bp = Blueprint("ui", __name__)
@@ -47,7 +47,7 @@ def edit(source_id):
     form = SourceForm(obj=source)
     form.season_choices(series.seasons)
     form.language_choices(sonarr.get_languages())
-    form.quality_choices(sonarr.get_qualities(), source.quality)
+    form.quality_choices(sonarr.get_qualities())
 
     if request.method == "POST" and form.validate_on_submit():
         magnet, err = get_magnet(form.url.data, form.cookies.data)
@@ -112,9 +112,6 @@ def add_source(tvdb_id):
                 language=form.language.data,
             )
             return redirect(url_for("ui.index"))
-
-    form.season.data = series.seasons[-1].season_number
-    form.quality.data = DEFAULT_QUALITY
 
     return render_template("add_source.html", form=form, series=series)
 
