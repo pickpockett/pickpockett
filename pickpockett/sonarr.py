@@ -131,7 +131,7 @@ class SonarrProfileSchemaCache(TTLCache):
         except KeyError:
             pass
 
-        profile = getter(f"v3/{key}profile/schema")
+        profile = getter()
         self[key] = profile
         return profile
 
@@ -190,21 +190,24 @@ class Sonarr:
     def get_series(self, tvdb_id: int) -> Series:
         return self.series_cache.get_series(tvdb_id, self._series)
 
-    def get_languages(self):
+    def _languages(self):
         language_profile = LanguageProfile.parse_obj(
-            self.profile_cache.get_profile("language", self._get)
+            self._get("v3/languageprofile/schema")
         )
-        return sorted(
-            (
+        return list(
+            sorted(
                 language_item.language.name
                 for language_item in language_profile.languages
                 if language_item.language.name != "Unknown"
-            ),
+            )
         )
 
-    def get_qualities(self):
+    def get_languages(self):
+        return self.profile_cache.get_profile("language", self._languages)
+
+    def _qualities(self):
         quality_profile = QualityProfile.parse_obj(
-            self.profile_cache.get_profile("quality", self._get)
+            self._get("v3/qualityprofile/schema")
         )
         qualities = [
             quality
@@ -219,6 +222,9 @@ class Sonarr:
             if quality != "Unknown"
         ]
         return qualities
+
+    def get_qualities(self):
+        return self.profile_cache.get_profile("quality", self._qualities)
 
 
 Series.update_forward_refs()
