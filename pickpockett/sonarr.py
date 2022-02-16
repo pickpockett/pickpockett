@@ -157,13 +157,10 @@ class Sonarr:
     def _series(self):
         return self._get("series")
 
-    def series(self) -> List[Series]:
+    def series_sorted(self) -> List[Series]:
         series = self._series()
         series_list = [Series.parse_obj(dict(s, sonarr=self)) for s in series]
-        return series_list
-
-    def series_sorted(self) -> List[Series]:
-        return sorted(self.series(), key=lambda s: s.sort_title)
+        return sorted(series_list, key=lambda s: s.sort_title)
 
     def series_dict(self) -> Dict[int, Series]:
         series = self._series()

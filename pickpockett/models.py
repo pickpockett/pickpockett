@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from datetime import datetime
 
@@ -27,9 +29,23 @@ class Source(db.Model):
     error = db.Column(db.Text, nullable=False, server_default="")
 
     @classmethod
+    def get(cls, ident) -> Source:
+        return cls.query.get(ident)
+
+    @classmethod
     def create(cls, **kwargs):
         obj = cls(**kwargs)
         db.session.add(obj)
+        db.session.commit()
+        return obj
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self, **kwargs):
+        for key, value in kwargs:
+            setattr(self, key, value)
         db.session.commit()
 
     @property

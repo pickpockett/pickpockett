@@ -1,8 +1,11 @@
+from __future__ import annotations
+
+import bisect
 from dataclasses import dataclass
 
 from flask import Blueprint, redirect, render_template, request, url_for
 
-from .. import config, db
+from .. import config
 from ..forms import ConfigForm, SourceForm
 from ..magnet import get_magnet
 from ..models import Source
@@ -16,9 +19,12 @@ class SeriesSource:
     series: Series
     source: Source
 
-
-def _sort_key(s: SeriesSource):
-    return s.series.sort_title, s.source.season
+    def __lt__(self, other: SeriesSource):
+        return (self.series.sort_title, self.source.season, self.source.id) < (
+            other.series.sort_title,
+            other.source.season,
+            other.source.id,
+        )
 
 
 @bp.route("/")
@@ -28,10 +34,15 @@ def index():
 
     series = sonarr.series_dict()
 
-    series_sources = sorted(
-        [SeriesSource(series[s.tvdb_id], s) for s in Source.query],
-        key=_sort_key,
-    )
+    series_sources = []
+    for source in Source.query:
+        source: Source
+        try:
+            s = series[source.tvdb_id]
+        except KeyError:
+            source.delete()
+        else:
+            bisect.insort(series_sources, SeriesSource(s, source))
 
     return render_template("index.html", series_sources=series_sources)
 
@@ -41,7 +52,7 @@ def edit(source_id):
     if (sonarr := get_sonarr()) is None:
         return redirect(url_for("ui.settings"))
 
-    source = Source.query.get(source_id)
+    source = Source.get(source_id)
     series = sonarr.get_series(source.tvdb_id)
 
     form = SourceForm(obj=source)
@@ -54,12 +65,13 @@ def edit(source_id):
         if err:
             form.url.errors = [err]
         else:
-            source.url = form.url.data
-            source.season = form.season.data
-            source.cookies = magnet.cookies
-            source.quality = form.quality.data
-            source.language = form.language.data
-            db.session.commit()
+            source.update(
+                url=form.url.data,
+                season=form.season.data,
+                cookies=magnet.cookies,
+                quality=form.quality.data,
+                language=form.language.data,
+            )
             return redirect(url_for("ui.index"))
     elif source.error:
         form.url.errors = [source.error]
@@ -71,8 +83,7 @@ def edit(source_id):
 
 @bp.route("/edit/<int:source_id>/delete", methods=["POST"])
 def delete(source_id):
-    Source.query.filter_by(id=source_id).delete()
-    db.session.commit()
+    Source.get(source_id).delete()
     return redirect(url_for("ui.index"))
 
 
