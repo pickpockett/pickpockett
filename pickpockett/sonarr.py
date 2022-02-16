@@ -44,6 +44,9 @@ class Series(BaseModel):
         arbitrary_types_allowed = True
         fields = {"sort_title": "sortTitle", "tvdb_id": "tvdbId"}
 
+    def __lt__(self, other: Series):
+        return self.sort_title < other.sort_title
+
     def image(self, cover_type: Literal["banner", "fanart", "poster"]):
         return next(i for i in self.images if i.cover_type == cover_type)
 
@@ -126,13 +129,31 @@ class SonarrProfileSchemaCache(TTLCache):
         try:
             return self[key]
         except KeyError:
-            profile = getter(f"v3/{key}profile/schema")
-            self[key] = profile
-            return profile
+            pass
+
+        profile = getter(f"v3/{key}profile/schema")
+        self[key] = profile
+        return profile
+
+
+class SonarrSeriesCache(TTLCache):
+    def __init__(self):
+        super().__init__(100, ttl=timedelta(days=1).total_seconds())
+
+    def get_series(self, key, getter):
+        try:
+            return self[key]
+        except KeyError:
+            pass
+
+        series = getter()
+        self.update(series)
+        return series[key]
 
 
 class Sonarr:
     profile_cache = SonarrProfileSchemaCache()
+    series_cache = SonarrSeriesCache()
 
     def __init__(self, sonarr_config):
         self.url = sonarr_config.url
@@ -154,27 +175,20 @@ class Sonarr:
         episode_list = parse_obj_as(List[Episode], episode)
         return episode_list
 
-    def _series(self):
-        return self._get("series")
-
-    def series_sorted(self) -> List[Series]:
-        series = self._series()
-        series_list = [Series.parse_obj(dict(s, sonarr=self)) for s in series]
-        return sorted(series_list, key=lambda s: s.sort_title)
-
-    def series_dict(self) -> Dict[int, Series]:
-        series = self._series()
-        series_dict = {
+    def _series(self) -> Dict[int, Series]:
+        series = {
             (s := Series.parse_obj(dict(obj, sonarr=self))).tvdb_id: s
-            for obj in series
+            for obj in self._get("series")
         }
-        return series_dict
+        return series
+
+    def series(self) -> List[Series]:
+        series = self._series()
+        self.series_cache.update(series)
+        return sorted(series.values())
 
     def get_series(self, tvdb_id: int) -> Series:
-        for obj in self._series():
-            s = Series.parse_obj(dict(obj, sonarr=self))
-            if s.tvdb_id == tvdb_id:
-                return s
+        return self.series_cache.get_series(tvdb_id, self._series)
 
     def get_languages(self):
         language_profile = LanguageProfile.parse_obj(
@@ -182,11 +196,10 @@ class Sonarr:
         )
         return sorted(
             (
-                language_item.language
+                language_item.language.name
                 for language_item in language_profile.languages
                 if language_item.language.name != "Unknown"
             ),
-            key=lambda language: language.name,
         )
 
     def get_qualities(self):
@@ -197,13 +210,13 @@ class Sonarr:
             quality
             for quality in chain(
                 *(
-                    (quality.quality for quality in quality_group.items)
+                    (quality.quality.name for quality in quality_group.items)
                     if quality_group.items
-                    else [quality_group.quality]
+                    else [quality_group.quality.name]
                     for quality_group in quality_profile.items
                 )
             )
-            if quality.name != "Unknown"
+            if quality != "Unknown"
         ]
         return qualities
 

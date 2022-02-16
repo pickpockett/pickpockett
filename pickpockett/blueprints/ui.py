@@ -32,13 +32,11 @@ def index():
     if (sonarr := get_sonarr()) is None:
         return redirect(url_for("ui.settings"))
 
-    series = sonarr.series_dict()
-
     series_sources = []
     for source in Source.query:
         source: Source
         try:
-            s = series[source.tvdb_id]
+            s = sonarr.get_series(source.tvdb_id)
         except KeyError:
             source.delete()
         else:
@@ -92,8 +90,7 @@ def add():
     if (sonarr := get_sonarr()) is None:
         return redirect(url_for("ui.settings"))
 
-    series = sonarr.series_sorted()
-
+    series = sonarr.series()
     return render_template("add.html", series=series)
 
 

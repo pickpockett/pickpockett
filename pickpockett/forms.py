@@ -12,7 +12,7 @@ from wtforms import (
 )
 
 from .models import ALL_SEASONS, DEFAULT_QUALITY
-from .sonarr import Language, Quality, Season
+from .sonarr import Season
 
 
 def strip_filter(value: str):
@@ -71,14 +71,14 @@ class SourceForm(FlaskForm):
         )
         self.season.data = seasons[-1].season_number
 
-    def language_choices(self, languages: List[Language]):
+    def language_choices(self, languages: List[str]):
         self.language.choices = (
             ("", ""),
-            *((language.name, language.name) for language in languages),
+            *((language, language) for language in languages),
         )
 
-    def quality_choices(self, qualities: List[Quality]):
-        choices = [(quality.name, quality.name) for quality in qualities]
+    def quality_choices(self, qualities: List[str]):
+        choices = [(quality, quality) for quality in qualities]
         current_quality = (self.quality.data, self.quality.data)
         if current_quality not in choices:
             choices.insert(0, current_quality)
