@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime
+
+from pytz import timezone
 
 from . import db
 from .magnet import Magnet
@@ -73,7 +76,11 @@ class Source(db.Model):
         if self.datetime is None:
             return ""
 
-        days = (datetime.utcnow().date() - self.datetime.date()).days
+        tz, utc = timezone(os.environ.get("TZ") or "UTC"), timezone("UTC")
+        days = (
+            datetime.now(tz).date()
+            - self.datetime.replace(tzinfo=utc).astimezone(tz).date()
+        ).days
 
         if days == 0:
             return "Today"

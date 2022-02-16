@@ -12,5 +12,6 @@ beautifulsoup4==4.10.0
 bootstrap-flask==2.0.1
 cachetools==5.0.0
 pydantic==1.9.0
+pytz==2021.3
 requests==2.27.1
 waitress==2.0.0

@@ -3,6 +3,7 @@ FROM python:3.10-slim
 EXPOSE 9119
 VOLUME /data
 ENV DATA_DIR=/data
+ENV TZ=UTC
 WORKDIR /app
 
 COPY requirements.txt .
