@@ -121,39 +121,22 @@ class QualityProfile(BaseModel):
     items: List[QualityGroup]
 
 
-class SonarrProfileSchemaCache(TTLCache):
+class SonarrCache(TTLCache):
     def __init__(self):
-        super().__init__(2, ttl=timedelta(minutes=15).total_seconds())
+        super().__init__(3, ttl=timedelta(days=1).total_seconds())
 
-    def get_profile(self, key, getter):
+    def get_cached(self, key, getter):
         try:
             return self[key]
         except KeyError:
             pass
 
-        profile = getter()
-        self[key] = profile
-        return profile
-
-
-class SonarrSeriesCache(TTLCache):
-    def __init__(self):
-        super().__init__(100, ttl=timedelta(days=1).total_seconds())
-
-    def get_series(self, key, getter):
-        try:
-            return self[key]
-        except KeyError:
-            pass
-
-        series = getter()
-        self.update(series)
-        return series[key]
+        cached = self[key] = getter()
+        return cached
 
 
 class Sonarr:
-    profile_cache = SonarrProfileSchemaCache()
-    series_cache = SonarrSeriesCache()
+    cache = SonarrCache()
 
     def __init__(self, sonarr_config):
         self.url = sonarr_config.url
@@ -183,12 +166,11 @@ class Sonarr:
         return series
 
     def series(self) -> List[Series]:
-        series = self._series()
-        self.series_cache.update(series)
+        series = self.cache["series"] = self._series()
         return sorted(series.values())
 
     def get_series(self, tvdb_id: int) -> Series:
-        return self.series_cache.get_series(tvdb_id, self._series)
+        return self.cache.get_cached("series", self._series).get(tvdb_id)
 
     def _languages(self):
         language_profile = LanguageProfile.parse_obj(
@@ -203,7 +185,7 @@ class Sonarr:
         )
 
     def get_languages(self):
-        return self.profile_cache.get_profile("language", self._languages)
+        return self.cache.get_cached("language", self._languages)
 
     def _qualities(self):
         quality_profile = QualityProfile.parse_obj(
@@ -224,7 +206,7 @@ class Sonarr:
         return qualities
 
     def get_qualities(self):
-        return self.profile_cache.get_profile("quality", self._qualities)
+        return self.cache.get_cached("quality", self._qualities)
 
 
 Series.update_forward_refs()
