@@ -74,6 +74,7 @@ class Episode(BaseModel):
         fields = {
             "season_number": "seasonNumber",
             "episode_number": "episodeNumber",
+            "air_date_utc": "airDateUtc",
             "has_file": "hasFile",
         }
 
