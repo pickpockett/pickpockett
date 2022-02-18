@@ -10,6 +10,7 @@ from wtforms import (
     URLField,
     validators,
 )
+from wtforms.widgets import TextArea
 
 from .models import ALL_SEASONS, DEFAULT_QUALITY
 from .sonarr import Season
@@ -25,6 +26,7 @@ class SourceForm(FlaskForm):
         [validators.input_required()],
         [strip_filter],
         description="Where to find a magnet link",
+        widget=TextArea(),
     )
     cookies = TextAreaField(
         "Cookies",
