@@ -25,8 +25,8 @@ class Magnet:
 
 
 def _prepare_cookies(cookies):
-    if cookies is None:
-        return
+    if not cookies:
+        return None
 
     cookies_orig = cookies
 
@@ -47,7 +47,7 @@ def _prepare_cookies(cookies):
     if isinstance(cookies, list):
         return {c["name"]: c["value"] for c in cookies}
 
-    raise ValueError(f"Wrong cookie {cookies_orig!r}")
+    raise ValueError(f"Wrong cookies {cookies_orig!r}")
 
 
 def _magnet_link(tag):
@@ -59,7 +59,7 @@ def _magnet_link(tag):
 
 
 def _find_magnet_link(url, cookies) -> Optional[Magnet]:
-    req_cookies = _prepare_cookies(cookies) if cookies else None
+    req_cookies = _prepare_cookies(cookies)
 
     response = requests.get(url, cookies=req_cookies, timeout=5)
     response.raise_for_status()
