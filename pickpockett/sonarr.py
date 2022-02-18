@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from itertools import chain
 from typing import Dict, List, Literal, Optional
 from urllib.parse import urljoin
 
 import requests
 from cachetools import TTLCache
-from pydantic import BaseModel, parse_obj_as, validator
+from pydantic import BaseModel, parse_obj_as
 
 from . import config
 from .models import ALL_SEASONS
