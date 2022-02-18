@@ -48,7 +48,7 @@ class Source(db.Model):
         db.session.commit()
 
     def update(self, **kwargs):
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             setattr(self, key, value)
         db.session.commit()
 
