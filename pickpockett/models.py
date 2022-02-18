@@ -4,6 +4,7 @@ import logging
 import os
 from datetime import datetime
 
+from humanize import naturaltime
 from pytz import timezone
 
 from . import db
@@ -77,16 +78,6 @@ class Source(db.Model):
             return ""
 
         tz, utc = timezone(os.environ.get("TZ") or "UTC"), timezone("UTC")
-        days = (
-            datetime.now(tz).date()
-            - self.datetime.replace(tzinfo=utc).astimezone(tz).date()
-        ).days
-
-        if days == 0:
-            return "Today"
-        elif days == 1:
-            return "Yesterday"
-        elif days < 0:
-            return "O_o"
-        else:
-            return f"{days} days ago"
+        dt = self.datetime.replace(tzinfo=utc).astimezone(tz)
+        now = datetime.now(utc)
+        return naturaltime(dt, when=now)
