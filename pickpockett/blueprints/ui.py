@@ -85,12 +85,6 @@ def delete(source_id):
     return redirect(url_for("ui.index"))
 
 
-@bp.route("/edit/<int:source_id>/reset", methods=["POST"])
-def reset(source_id):
-    Source.get(source_id).update(hash="", datetime=None)
-    return redirect(url_for("ui.index"))
-
-
 @bp.route("/add")
 def add():
     if (sonarr := get_sonarr()) is None:

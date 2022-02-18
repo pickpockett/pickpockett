@@ -8,16 +8,9 @@
 </h1>
 {{ render_form(form, form_type='horizontal') }}
 <div class="d-flex justify-content-between">
-    <div class>
-        <form class="d-inline-block" action="{{ url_for('ui.delete', source_id=source.id) }}" method="post">
-            <input class="btn btn-danger" type="submit" value="Delete">
-        </form>
-        {% if source.datetime %}
-        <form class="d-inline-block" action="{{ url_for('ui.reset', source_id=source.id) }}" method="post">
-            <input class="btn btn-outline-warning" type="submit" value="Force re-download">
-        </form>
-        {% endif %}
-    </div>
+    <form action="{{ url_for('ui.delete', source_id=source.id) }}" method="post">
+        <input class="btn btn-danger" type="submit" value="Delete">
+    </form>
     <div>
         <a class="btn btn-secondary" href="{{ url_for('ui.index') }}">Cancel</a>
         <label class="btn btn-primary" for="{{ form.submit.id }}">Save</label>
