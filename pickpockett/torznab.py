@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timezone
-from typing import List
 from xml.etree import ElementTree as et
 
 from flask_sqlalchemy import BaseQuery
@@ -122,7 +121,7 @@ def _tostring(xml):
     return et.tostring(xml, encoding="utf-8", xml_declaration=True)
 
 
-def _query(q, tvdb_id, season) -> List[Source]:
+def _query(q, tvdb_id, season):
     if q:
         logger.info("'q' search parameter isn't supported")
         return []
@@ -165,14 +164,17 @@ def _get_items(q, tvdb_id, season):
 
         source.update_magnet(magnet)
         season_number = source.season if season is None else int(season)
-        episodes = series.get_episodes(season_number)
+        missing = series.get_missing(season_number, source.datetime)
 
-        for ep in episodes:
+        for ep in missing:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
             ep_name = f"{series.title} {ep_repr}"
-            if extra := source.extra:
-                ep_name = f"{ep_name} [{extra}]"
+            logger.info(
+                "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
+            )
 
+            if extra := source.extra:
+                ep_name += f" [{extra}]"
             item = _item(
                 ep_name,
                 source.url,

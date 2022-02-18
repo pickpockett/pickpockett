@@ -54,12 +54,19 @@ class Series(BaseModel):
     def poster(self):
         return urljoin(self.sonarr.url, self.image("poster").url)
 
-    def get_episodes(self, season) -> List[Episode]:
+    def get_missing(self, season, dt) -> List[Episode]:
         episode = self.sonarr.episode(self.id)
         season_episode_list = [
             ep
             for ep in episode
-            if ep.monitored and season in (ALL_SEASONS, ep.season_number)
+            if (
+                ep.monitored
+                and not ep.has_file
+                and (season == ALL_SEASONS or ep.season_number == season)
+            )
+            and ep.air_date_utc is not None
+            and dt is not None
+            and ep.air_date_utc < dt
         ]
         return season_episode_list
 
@@ -67,6 +74,7 @@ class Series(BaseModel):
 class Episode(BaseModel):
     season_number: int
     episode_number: int
+    air_date_utc: datetime = None
     has_file: bool
     monitored: bool
 
@@ -77,6 +85,10 @@ class Episode(BaseModel):
             "air_date_utc": "airDateUtc",
             "has_file": "hasFile",
         }
+
+    @validator("air_date_utc")
+    def remove_tz(cls, air_date_utc: datetime):
+        return air_date_utc.replace(tzinfo=None)
 
 
 class Language(BaseModel):
