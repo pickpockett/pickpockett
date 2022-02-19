@@ -69,6 +69,7 @@ def edit(source_id):
                 cookies=magnet.cookies,
                 quality=form.quality.data,
                 language=form.language.data,
+                error="",
             )
             return redirect(url_for("ui.index"))
     elif source.error:
