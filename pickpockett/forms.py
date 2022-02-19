@@ -71,7 +71,6 @@ class SourceForm(FlaskForm):
                 for s in seasons
             ),
         )
-        self.season.data = seasons[-1].season_number
 
     def language_choices(self, languages: List[str]):
         self.language.choices = (
