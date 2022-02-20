@@ -162,12 +162,20 @@ def add_smart():
     if request.method == "POST" and form.validate_on_submit():
         page = parse(form.url.data, form.cookies.data)
 
-        args = form.data.copy()
-        del args["submit"]
+        args = {k: v for k, v in form.data.items() if k != "submit" and v}
 
         if (tag := page.find("title")) and (
             lookup := sonarr.series_lookup(tag.text)
         ):
+            if parsed := (
+                sonarr.parse(tag.text) or sonarr.parse(tag.text, strip=True)
+            ):
+                if 0 < parsed.season_number <= lookup.season_count:
+                    args["season"] = parsed.season_number
+                if parsed.quality.quality.name != "Unknown":
+                    args["quality"] = parsed.quality.quality.name
+                if parsed.language.name != "English":
+                    args["language"] = parsed.language.name
             return redirect(
                 url_for("ui.add_source", tvdb_id=lookup.tvdb_id, **args)
             )

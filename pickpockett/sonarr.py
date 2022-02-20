@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timedelta
 from itertools import chain
 from typing import Dict, List, Literal, Optional
@@ -78,10 +79,15 @@ class Series(BaseModel):
 
 class SeriesLookup(BaseModel):
     profile_id: int
+    season_count: int
     tvdb_id: int
 
     class Config:
-        fields = {"profile_id": "profileId", "tvdb_id": "tvdbId"}
+        fields = {
+            "profile_id": "profileId",
+            "season_count": "seasonCount",
+            "tvdb_id": "tvdbId",
+        }
 
 
 class Episode(BaseModel):
@@ -117,7 +123,6 @@ class LanguageProfile(BaseModel):
 
 
 class Quality(BaseModel):
-    id: int
     name: str
 
 
@@ -132,6 +137,15 @@ class QualityGroup(BaseModel):
 
 class QualityProfile(BaseModel):
     items: List[QualityGroup]
+
+
+class ParsedEpisodeInfo(BaseModel):
+    season_number: int
+    language: Language
+    quality: QualityItem
+
+    class Config:
+        fields = {"season_number": "seasonNumber"}
 
 
 class SonarrCache(TTLCache):
@@ -227,6 +241,14 @@ class Sonarr:
         for series in lookup_list:
             if series.profile_id > 0:
                 return series
+
+    def parse(self, title, *, strip=False):
+        if strip:
+            title = re.sub(r"[^\s\w]+", "", title, flags=re.ASCII)
+
+        parsed = self._get("parse", title=title)
+        if parsed_info := parsed.get("parsedEpisodeInfo"):
+            return ParsedEpisodeInfo.parse_obj(parsed_info)
 
 
 Series.update_forward_refs()
