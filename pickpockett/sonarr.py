@@ -54,6 +54,11 @@ class Series(BaseModel):
     def poster(self):
         return urljoin(self.sonarr.url, self.image("poster").url)
 
+    def completed(self, season):
+        episode = self.sonarr.episode(self.id)
+        exist = [ep.has_file for ep in episode if ep.season_number == season]
+        return exist and all(exist)
+
     def get_missing(self, season, dt) -> List[Episode]:
         episode = self.sonarr.episode(self.id)
         season_episode_list = [

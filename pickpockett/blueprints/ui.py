@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import bisect
 from dataclasses import dataclass
+from functools import cached_property
+from typing import List
 
 from flask import Blueprint, redirect, render_template, request, url_for
 
@@ -26,13 +28,17 @@ class SeriesSource:
             other.source.id,
         )
 
+    @cached_property
+    def completed(self):
+        return self.series.completed(self.source.season)
+
 
 @bp.route("/")
 def index():
     if (sonarr := get_sonarr()) is None:
         return redirect(url_for("ui.settings"))
 
-    series_sources = []
+    series_sources: List[SeriesSource] = []
     for source in Source.query:
         source: Source
         try:

@@ -13,11 +13,12 @@
         <th>Quality</th>
         <th>Language</th>
         <th>Updated</th>
+        <th></th>
     </tr>
 </thead>
 <tbody>
 {% for ss in series_sources %}
-    <tr{% if ss.source.error %} class="table-danger"{% endif %}>
+    <tr{% if ss.completed %} class="table-info"{% elif ss.source.error %} class="table-danger"{% endif %}>
         <td>
             <a class="px-2" href="{{ url_for('ui.edit', source_id=ss.source.id) }}">
                 <img class="poster px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />{{ ss.series.title }}
@@ -27,6 +28,12 @@
         <td>{{ ss.source.quality }}</td>
         <td>{{ ss.source.language }}</td>
         <td>{{ ss.source.updated }}</td>
+        <td>{% if ss.completed %}
+            <form action="{{ url_for('ui.delete', source_id=ss.source.id) }}" method="post">
+                <input class="btn btn-close" type="submit" value="">
+            </form>
+            {% endif %}
+        </td>
     </tr>
 {% endfor %}
 </tbody>
