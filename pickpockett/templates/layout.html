@@ -10,9 +10,11 @@
 </head>
 <body>
 <div class="container">
-<header class="h1 p-3 bg-dark text-light">
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="PickPockett" />
-    <span class="align-middle">PickPockett</span>
+<header class="h1 p-3 bg-dark">
+    <a class="text-decoration-none text-light" href="{{ url_for('ui.index') }}">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="PickPockett" />
+        <span class="align-middle">PickPockett</span>
+    </a>
 </header>
 {% block content %}{% endblock %}
 </div>
