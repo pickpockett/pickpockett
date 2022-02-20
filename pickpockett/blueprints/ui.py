@@ -32,6 +32,12 @@ class SeriesSource:
     def completed(self):
         return self.series.completed(self.source.season)
 
+    @property
+    def season(self):
+        return {-1: "All Seasons", 0: "Specials"}.get(
+            self.source.season, self.source.season
+        )
+
 
 @bp.route("/")
 def index():
