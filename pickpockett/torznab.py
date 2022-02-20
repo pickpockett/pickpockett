@@ -166,6 +166,7 @@ def _get_items(q, tvdb_id, season):
             )
             continue
         if err:
+            logger.error("[tvdbid:%i]: error: %s", err)
             continue
 
         source.update_magnet(magnet)
