@@ -96,3 +96,25 @@ class SonarrConfigForm(FlaskForm):
 class ConfigForm(FlaskForm):
     sonarr = FormField(SonarrConfigForm)
     submit = SubmitField(render_kw={"hidden": True})
+
+
+class GuessForm(FlaskForm):
+    url = URLField(
+        "URL",
+        [validators.input_required()],
+        [strip_filter],
+        description="Guess a series by this link",
+        widget=TextArea(),
+    )
+    cookies = TextAreaField(
+        "Cookies",
+        [validators.optional()],
+        [strip_filter],
+        description=(
+            "(optional) Used for authentication."
+            ' Here is an <a href="https://chrome.google.com/webstore/detail'
+            '/copy-cookies/jcbpglbplpblnagieibnemmkiamekcdg">extension</a>'
+            " to copy cookies of a web page"
+        ),
+    )
+    submit = SubmitField(render_kw={"hidden": True})

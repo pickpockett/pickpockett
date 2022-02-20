@@ -8,9 +8,10 @@ from typing import List
 from flask import Blueprint, redirect, render_template, request, url_for
 
 from .. import config
-from ..forms import ConfigForm, SourceForm
+from ..forms import ConfigForm, GuessForm, SourceForm
 from ..magnet import get_magnet
 from ..models import Source
+from ..page import parse
 from ..sonarr import Series, get_sonarr
 
 bp = Blueprint("ui", __name__)
@@ -104,7 +105,7 @@ def add():
         return redirect(url_for("ui.settings"))
 
     series = sonarr.series()
-    return render_template("add.html", series=series)
+    return render_template("add.html", series=series, args=request.args)
 
 
 @bp.route("/add/<int:tvdb_id>", methods=["GET", "POST"])
@@ -114,7 +115,7 @@ def add_source(tvdb_id):
 
     series = sonarr.get_series(tvdb_id)
 
-    form = SourceForm()
+    form = SourceForm(**request.args)
     form.season_choices(series.seasons)
     form.language_choices(sonarr.get_languages())
     form.quality_choices(sonarr.get_qualities())
@@ -149,3 +150,28 @@ def settings():
         return redirect(url_for("ui.index"))
 
     return render_template("settings.html", form=form)
+
+
+@bp.route("/ass/smart", methods=["GET", "POST"])
+def add_smart():
+    if (sonarr := get_sonarr()) is None:
+        return redirect(url_for("ui.settings"))
+
+    form = GuessForm()
+
+    if request.method == "POST" and form.validate_on_submit():
+        page = parse(form.url.data, form.cookies.data)
+
+        args = form.data.copy()
+        del args["submit"]
+
+        if (tag := page.find("title")) and (
+            lookup := sonarr.series_lookup(tag.text)
+        ):
+            return redirect(
+                url_for("ui.add_source", tvdb_id=lookup.tvdb_id, **args)
+            )
+
+        return redirect(url_for("ui.add", **args))
+
+    return render_template("add_smart.html", form=form)

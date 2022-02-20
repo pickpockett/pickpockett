@@ -76,6 +76,14 @@ class Series(BaseModel):
         return season_episode_list
 
 
+class SeriesLookup(BaseModel):
+    profile_id: int
+    tvdb_id: int
+
+    class Config:
+        fields = {"profile_id": "profileId", "tvdb_id": "tvdbId"}
+
+
 class Episode(BaseModel):
     season_number: int
     episode_number: int
@@ -212,6 +220,13 @@ class Sonarr:
 
     def get_qualities(self):
         return self.cache.get_cached("quality", self._qualities)
+
+    def series_lookup(self, term):
+        lookup = self._get("series/lookup", term=term)
+        lookup_list = parse_obj_as(List[SeriesLookup], lookup)
+        for series in lookup_list:
+            if series.profile_id > 0:
+                return series
 
 
 Series.update_forward_refs()

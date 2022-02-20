@@ -2,7 +2,10 @@
 
 {% block content %}
 <div class="d-flex justify-content-between">
-    <a class="btn btn-success" href="{{ url_for('ui.add') }}">Add</a>
+    <div>
+        <a class="btn btn-success" href="{{ url_for('ui.add') }}">Add</a>
+        <a class="btn btn-outline-info" href="{{ url_for('ui.add_smart') }}">Smart Add</a>
+    </div>
     <a class="btn btn-dark" href="{{ url_for('ui.settings') }}">Settings</a>
 </div>
 <table class="table table-hover align-middle">

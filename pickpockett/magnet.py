@@ -4,8 +4,9 @@ from typing import Dict, List, Optional, cast
 from urllib.parse import parse_qs, urlparse
 
 import requests
-from bs4 import BeautifulSoup
 from requests.utils import dict_from_cookiejar
+
+from .page import parse
 
 logger = logging.getLogger(__name__)
 
@@ -24,32 +25,6 @@ class Magnet:
         return self._hash
 
 
-def _prepare_cookies(cookies):
-    if not cookies:
-        return None
-
-    cookies_orig = cookies
-
-    if isinstance(cookies, str):
-        try:
-            cookies = json.loads(cookies)
-        except json.JSONDecodeError:
-            return {
-                k: v
-                for k, _, v in (
-                    s.strip().partition("=") for s in cookies.split(";")
-                )
-            }
-
-    if isinstance(cookies, dict):
-        return cookies
-
-    if isinstance(cookies, list):
-        return {c["name"]: c["value"] for c in cookies}
-
-    raise ValueError(f"Wrong cookies {cookies_orig!r}")
-
-
 def _magnet_link(tag):
     return (
         tag.name == "a"
@@ -59,16 +34,9 @@ def _magnet_link(tag):
 
 
 def _find_magnet_link(url, cookies) -> Optional[Magnet]:
-    req_cookies = _prepare_cookies(cookies)
-
-    response = requests.get(url, cookies=req_cookies, timeout=5)
-    response.raise_for_status()
-
-    bs = BeautifulSoup(response.text, "html.parser")
-    tag = bs.find(_magnet_link)
-
-    if tag:
-        if cookies and (res_cookies := dict_from_cookiejar(response.cookies)):
+    page = parse(url, cookies)
+    if tag := page.find(_magnet_link):
+        if cookies and (res_cookies := dict_from_cookiejar(page.cookies)):
             cookies = json.dumps(res_cookies)
         return Magnet(tag["href"], cookies)
 
