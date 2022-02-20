@@ -148,7 +148,13 @@ def _get_items(q, tvdb_id, season):
     items = []
 
     for source in sources:
-        if (series := sonarr.get_series(source.tvdb_id)) is None:
+        series = sonarr.get_series(source.tvdb_id)
+        if series is None:
+            continue
+
+        season_number = source.season if season is None else int(season)
+        missing = series.get_missing(season_number, source.datetime)
+        if not missing:
             continue
 
         magnet, err = get_magnet(source.url, source.cookies)
@@ -163,8 +169,6 @@ def _get_items(q, tvdb_id, season):
             continue
 
         source.update_magnet(magnet)
-        season_number = source.season if season is None else int(season)
-        missing = series.get_missing(season_number, source.datetime)
 
         for ep in missing:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
