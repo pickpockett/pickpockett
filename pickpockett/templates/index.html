@@ -21,8 +21,14 @@
     <tr{% if ss.completed %} class="table-info"{% elif ss.source.error %} class="table-danger"{% endif %}>
         <td>
             <a class="px-2" href="{{ url_for('ui.edit', source_id=ss.source.id) }}">
-                <img class="poster px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />{{ ss.series.title }}
+                <img class="poster px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
+                {{- ss.series.title -}}
             </a>
+            {% if ss.completed %}
+            <span class="badge bg-success text-uppercase">Completed</span>
+            {% elif ss.source.error %}
+            <span class="badge bg-danger text-uppercase" title="{{ ss.source.error }}">Error</span>
+            {% endif %}
         </td>
         <td>{{ ss.source.season }}</td>
         <td>{{ ss.source.quality }}</td>
