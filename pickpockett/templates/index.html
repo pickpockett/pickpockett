@@ -34,7 +34,8 @@
         <td>{{ ss.source.quality }}</td>
         <td>{{ ss.source.language }}</td>
         <td>{{ ss.source.updated }}</td>
-        <td>{% if ss.completed %}
+        <td>
+            {% if ss.completed %}
             <form action="{{ url_for('ui.delete', source_id=ss.source.id) }}" method="post">
                 <input class="btn btn-close" type="submit" value="">
             </form>
