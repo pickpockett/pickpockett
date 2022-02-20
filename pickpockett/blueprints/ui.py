@@ -134,7 +134,7 @@ def add_source(tvdb_id):
                 language=form.language.data,
             )
             return redirect(url_for("ui.index"))
-    elif "season" not in request.args:
+    elif form.season.data is None:
         form.season.data = series.seasons[-1].season_number
 
     return render_template("add_source.html", form=form, series=series)
