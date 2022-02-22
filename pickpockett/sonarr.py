@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import chain
 from typing import Dict, List, Literal, Optional
 from urllib.parse import urljoin
@@ -61,6 +61,7 @@ class Series(BaseModel):
         return exist and all(exist)
 
     def get_episodes(self, season, dt, missing=False) -> List[Episode]:
+        dt = dt or datetime.now(timezone.utc).replace(tzinfo=None)
         episode = self.sonarr.episode(self.id)
         season_episode_list = [
             ep
@@ -69,7 +70,7 @@ class Series(BaseModel):
             and (not missing or not ep.has_file)
             and (season == ALL_SEASONS or ep.season_number == season)
             and ep.air_date_utc is not None
-            and (dt is None or ep.air_date_utc < dt)
+            and ep.air_date_utc < dt
         ]
         return season_episode_list
 

@@ -175,9 +175,14 @@ def _get_items(q, tvdb_id, season):
         for ep in episodes:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
             ep_name = f"{series.title} {ep_repr}"
-            logger.info(
-                "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
-            )
+            if ep.has_file:
+                logger.info(
+                    "[tvdbid:%i]: episode exists: %s", source.tvdb_id, ep_name
+                )
+            else:
+                logger.info(
+                    "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
+                )
 
             if extra := source.extra:
                 ep_name += f" [{extra}]"
