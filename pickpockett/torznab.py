@@ -153,8 +153,9 @@ def _get_items(q, tvdb_id, season):
             continue
 
         season_number = source.season if season is None else int(season)
-        missing = series.get_missing(season_number, source.datetime)
-        if not missing:
+        missing = not bool(tvdb_id)
+        episodes = series.get_episodes(season_number, source.datetime, missing)
+        if not episodes:
             continue
 
         magnet, err = get_magnet(source.url, source.cookies)
@@ -171,7 +172,7 @@ def _get_items(q, tvdb_id, season):
 
         source.update_magnet(magnet)
 
-        for ep in missing:
+        for ep in episodes:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
             ep_name = f"{series.title} {ep_repr}"
             logger.info(
