@@ -61,7 +61,7 @@ class Series(BaseModel):
         return exist and all(exist)
 
     def get_missing(self, season, dt) -> List[Episode]:
-        dt = dt or datetime.now(timezone.utc)
+        dt = dt or datetime.now(timezone.utc).replace(tzinfo=None)
         episode = self.sonarr.episode(self.id)
         season_episode_list = [
             ep
