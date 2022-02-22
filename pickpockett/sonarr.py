@@ -93,7 +93,7 @@ class SeriesLookup(BaseModel):
 class Episode(BaseModel):
     season_number: int
     episode_number: int
-    air_date_utc: datetime = None
+    air_date_utc: Optional[datetime] = None
     has_file: bool
     monitored: bool
 
@@ -197,7 +197,12 @@ class Sonarr:
         return sorted(series.values())
 
     def get_series(self, tvdb_id: int) -> Series:
-        return self.cache.get_cached("series", self._series).get(tvdb_id)
+        try:
+            return self.cache.get_cached("series", self._series)[tvdb_id]
+        except KeyError:
+            pass
+        series = self.cache["series"] = self._series()
+        return series[tvdb_id]
 
     def _languages(self):
         language_profile = LanguageProfile.parse_obj(
