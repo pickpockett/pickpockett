@@ -154,7 +154,7 @@ def _get_items(q, tvdb_id, season):
 
         season_number = source.season if season is None else int(season)
         missing = not bool(tvdb_id)
-        episodes = series.get_episodes(season_number, source.datetime, missing)
+        episodes = series.get_episodes(season_number, None, missing)
         if not episodes:
             continue
 
@@ -170,7 +170,8 @@ def _get_items(q, tvdb_id, season):
             logger.error("[tvdbid:%i]: error: %s", err)
             continue
 
-        source.update_magnet(magnet)
+        if not source.update_magnet(magnet):
+            continue
 
         for ep in episodes:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
