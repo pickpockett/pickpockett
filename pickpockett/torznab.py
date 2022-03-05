@@ -170,8 +170,7 @@ def _get_items(q, tvdb_id, season):
             logger.error("[tvdbid:%i]: error: %s", err)
             continue
 
-        if not source.update_magnet(magnet):
-            continue
+        source.update_magnet(magnet)
 
         for ep in episodes:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"

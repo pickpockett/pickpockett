@@ -67,8 +67,6 @@ class Source(db.Model):
             self.hash = magnet.hash
             self.datetime = datetime.utcnow()
             db.session.commit()
-            return True
-        return False
 
     def update_error(self, err):
         self.error = err or ""
