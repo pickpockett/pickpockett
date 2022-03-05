@@ -153,8 +153,9 @@ def _get_items(q, tvdb_id, season):
             continue
 
         season_number = source.season if season is None else int(season)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         missing = not bool(tvdb_id)
-        episodes = series.get_episodes(season_number, None, missing)
+        episodes = series.get_episodes(season_number, now, missing)
         if not episodes:
             continue
 
@@ -171,6 +172,8 @@ def _get_items(q, tvdb_id, season):
             continue
 
         source.update_magnet(magnet)
+        if source.datetime > max(ep.air_date_utc for ep in episodes):
+            continue
 
         for ep in episodes:
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from itertools import chain
 from typing import Dict, List, Literal, Optional
 from urllib.parse import urljoin
@@ -61,7 +61,6 @@ class Series(BaseModel):
         return exist and all(exist)
 
     def get_episodes(self, season, dt, missing=False) -> List[Episode]:
-        dt = dt or datetime.now(timezone.utc).replace(tzinfo=None)
         episode = self.sonarr.episode(self.id)
         season_episode_list = [
             ep
