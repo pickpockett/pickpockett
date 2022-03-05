@@ -172,7 +172,7 @@ def _get_items(q, tvdb_id, season):
             continue
 
         source.update_magnet(magnet)
-        if source.datetime > max(ep.air_date_utc for ep in episodes):
+        if source.datetime < max(ep.air_date_utc for ep in episodes):
             continue
 
         for ep in episodes:
