@@ -57,7 +57,7 @@ def get_magnet(url, cookies=""):
     except requests.HTTPError as e:
         logger.error(e)
         if e.response is not None:
-            return None, e.response.reason
+            return None, e.response.reason or f"Error {e.response.status_code}"
         return None, "HTTP Error"
     except requests.ConnectionError as e:
         logger.error(e)
