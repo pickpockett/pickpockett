@@ -101,11 +101,15 @@ def delete(source_id):
 
 @bp.route("/add")
 def add():
+    args = request.args.copy()
+    tvdb_ids = list(map(int, args.poplist("tvdb_id")))
     if (sonarr := get_sonarr()) is None:
         return redirect(url_for("ui.settings"))
 
     series = sonarr.series()
-    return render_template("add.html", series=series, args=request.args)
+    if tvdb_ids:
+        series = [s for s in series if s.tvdb_id in tvdb_ids]
+    return render_template("add.html", series=series, args=args)
 
 
 @bp.route("/add/<int:tvdb_id>", methods=["GET", "POST"])
@@ -134,7 +138,7 @@ def add_source(tvdb_id):
                 language=form.language.data,
             )
             return redirect(url_for("ui.index"))
-    elif form.season.data is None:
+    elif form.season.data is None or form.season.data > series.season_count:
         form.season.data = series.seasons[-1].season_number
 
     return render_template("add_source.html", form=form, series=series)
@@ -170,15 +174,18 @@ def add_smart():
             if parsed := (
                 sonarr.parse(tag.text) or sonarr.parse(tag.text, strip=True)
             ):
-                if 0 < parsed.season_number <= lookup.season_count:
+                if parsed.season_number > 0:
                     args["season"] = parsed.season_number
                 if parsed.quality.quality.name != "Unknown":
                     args["quality"] = parsed.quality.quality.name
                 if parsed.language.name != "English":
                     args["language"] = parsed.language.name
-            return redirect(
-                url_for("ui.add_source", tvdb_id=lookup.tvdb_id, **args)
-            )
+            if len(lookup) == 1:
+                return redirect(
+                    url_for("ui.add_source", tvdb_id=lookup[0].tvdb_id, **args)
+                )
+            else:
+                args["tvdb_id"] = [series.tvdb_id for series in lookup]
 
         return redirect(url_for("ui.add", **args))
 

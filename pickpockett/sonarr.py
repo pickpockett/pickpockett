@@ -39,11 +39,16 @@ class Series(BaseModel):
     tvdb_id: int
     images: List[Image]
     seasons: List[Season]
+    season_count: int
     sonarr: Sonarr
 
     class Config:
         arbitrary_types_allowed = True
-        fields = {"sort_title": "sortTitle", "tvdb_id": "tvdbId"}
+        fields = {
+            "season_count": "seasonCount",
+            "sort_title": "sortTitle",
+            "tvdb_id": "tvdbId",
+        }
 
     def __lt__(self, other: Series):
         return self.sort_title < other.sort_title
@@ -239,10 +244,12 @@ class Sonarr:
 
     def series_lookup(self, term):
         lookup = self._get("series/lookup", term=term)
-        lookup_list = parse_obj_as(List[SeriesLookup], lookup)
-        for series in lookup_list:
-            if series.profile_id > 0:
-                return series
+        lookup_list = [
+            series
+            for series in parse_obj_as(List[SeriesLookup], lookup)
+            if series.profile_id > 0
+        ]
+        return lookup_list
 
     def parse(self, title, *, strip=False):
         if strip:
