@@ -152,7 +152,7 @@ def settings():
     return render_template("settings.html", form=form)
 
 
-@bp.route("/ass/smart", methods=["GET", "POST"])
+@bp.route("/add/smart", methods=["GET", "POST"])
 def add_smart():
     if (sonarr := get_sonarr()) is None:
         return redirect(url_for("ui.settings"))
