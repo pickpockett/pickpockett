@@ -53,6 +53,9 @@ def parse(url, cookies):
     except requests.ConnectionError as e:
         logger.error(e)
         return ParseError("Connection Error")
+    except requests.Timeout as e:
+        logger.error(e)
+        return ParseError("Timeout Error")
     except requests.RequestException as e:
         logger.error(e)
         return ParseError("Request Error")
