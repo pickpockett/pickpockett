@@ -60,8 +60,9 @@ def parse(url, cookies):
     headers = {
         **HEADERS,
         "Referer": url,
-        "User-Agent": conf.general.user_agent,
     }
+    if conf.general and (user_agent := conf.general.user_agent):
+        headers["User-Agent"] = user_agent
 
     try:
         response = requests.get(
