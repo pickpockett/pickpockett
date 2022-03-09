@@ -75,19 +75,19 @@ def parse(url, cookies):
             raise ParseError(
                 e.response.reason or f"Error {e.response.status_code}"
             )
-        return ParseError("HTTP Error")
+        raise ParseError("HTTP Error")
     except requests.ConnectionError as e:
         logger.error(e)
-        return ParseError("Connection Error")
+        raise ParseError("Connection Error")
     except requests.Timeout as e:
         logger.error(e)
-        return ParseError("Timeout Error")
+        raise ParseError("Timeout Error")
     except requests.RequestException as e:
         logger.error(e)
-        return ParseError("Request Error")
+        raise ParseError("Request Error")
     except Exception as e:
         logger.error(e)
-        return ParseError("Unknown Error")
+        raise ParseError("Unknown Error")
 
     bs = BeautifulSoup(response.text, "html.parser")
     bs.cookies = response.cookies
