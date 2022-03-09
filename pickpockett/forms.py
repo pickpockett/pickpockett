@@ -1,6 +1,7 @@
 from typing import List
 
 from flask_wtf import FlaskForm
+from markupsafe import Markup
 from wtforms import (
     FormField,
     SelectField,
@@ -10,7 +11,7 @@ from wtforms import (
     URLField,
     validators,
 )
-from wtforms.widgets import TextArea
+from wtforms.widgets import TextArea, TextInput
 
 from .models import ALL_SEASONS, DEFAULT_QUALITY
 from .sonarr import Season
@@ -86,9 +87,35 @@ class SourceForm(FlaskForm):
         self.quality.choices = choices
 
 
+class UserAgentInput(TextInput):
+    def __call__(self, field, **kwargs):
+        input_tag = super().__call__(field, **kwargs)
+        return Markup(
+            '<div class="input-group">'
+            "   %s"
+            "   <button %s>%s</button>"
+            "</div>"
+            % (
+                input_tag,
+                self.html_params(
+                    class_="btn btn-outline-secondary",
+                    type="button",
+                    onclick=(
+                        "getElementById('%s').value="
+                        "window.navigator.userAgent" % field.id
+                    ),
+                ),
+                "FILL",
+            )
+        )
+
+
 class GeneralConfigForm(FlaskForm):
     user_agent = StringField(
-        "User Agent", [validators.input_required()], [strip_filter]
+        "User Agent",
+        [validators.input_required()],
+        [strip_filter],
+        widget=UserAgentInput(),
     )
 
 
