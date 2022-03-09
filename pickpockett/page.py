@@ -37,11 +37,34 @@ class ParseError(Exception):
     pass
 
 
+HEADERS = {
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;"
+        "q=0.9,image/avif,image/webp,image/apng,*/*;"
+        "q=0.8,application/signed-exchange;v=b3;q=0.9"
+    ),
+    "Accept-Encoding": "gzip, deflate",
+    "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8,ru;q=0.7,uk;q=0.6",
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+    "Pragma": "no-cache",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/99.0.4844.51 Safari/537.36"
+    ),
+}
+
+
 def parse(url, cookies):
     req_cookies = _prepare_cookies(cookies)
+    headers = {**HEADERS, "Referer": url}
 
     try:
-        response = requests.get(url, cookies=req_cookies, timeout=5)
+        response = requests.get(
+            url, cookies=req_cookies, headers=headers, timeout=5
+        )
         response.raise_for_status()
     except requests.HTTPError as e:
         logger.error(e)
