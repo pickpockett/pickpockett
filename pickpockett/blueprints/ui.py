@@ -148,6 +148,8 @@ def add_source(tvdb_id):
 def settings():
     conf = config.load()
     form = ConfigForm(obj=conf)
+    if not (conf.general and conf.general.user_agent):
+        form.general.form.user_agent.data = str(request.user_agent)
 
     if request.method == "POST" and form.validate_on_submit():
         config.save(form.data)

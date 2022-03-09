@@ -5,11 +5,7 @@ from pydantic import AnyHttpUrl, BaseModel
 
 
 class GeneralConfig(BaseModel):
-    user_agent: str = (
-        "Mozilla/5.0 (X11; Linux x86_64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/99.0.4844.51 Safari/537.36"
-    )
+    user_agent: str
 
 
 class SonarrConfig(BaseModel):
@@ -18,7 +14,7 @@ class SonarrConfig(BaseModel):
 
 
 class Config(BaseModel):
-    general: GeneralConfig = GeneralConfig()
+    general: Optional[GeneralConfig]
     sonarr: Optional[SonarrConfig]
 
 
