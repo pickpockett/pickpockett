@@ -3,10 +3,9 @@ import logging
 from typing import Dict, List, Optional, cast
 from urllib.parse import parse_qs, urlparse
 
-import requests
 from requests.utils import dict_from_cookiejar
 
-from .page import parse
+from .page import ParseError, parse
 
 logger = logging.getLogger(__name__)
 
@@ -54,20 +53,8 @@ def _hash_from_magnet(magnet_url):
 def get_magnet(url, cookies=""):
     try:
         magnet = _find_magnet_link(url, cookies)
-    except requests.HTTPError as e:
-        logger.error(e)
-        if e.response is not None:
-            return None, e.response.reason or f"Error {e.response.status_code}"
-        return None, "HTTP Error"
-    except requests.ConnectionError as e:
-        logger.error(e)
-        return None, "Connection Error"
-    except requests.RequestException as e:
-        logger.error(e)
-        return None, "Request Error"
-    except Exception as e:
-        logger.error(e)
-        return None, "Unknown Error"
+    except ParseError as e:
+        return None, str(e)
 
     error = "No magnet link found" if magnet.url is None else None
 

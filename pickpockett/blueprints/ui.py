@@ -11,7 +11,7 @@ from .. import config
 from ..forms import ConfigForm, GuessForm, SourceForm
 from ..magnet import get_magnet
 from ..models import Source
-from ..page import parse
+from ..page import ParseError, parse
 from ..sonarr import Series, get_sonarr
 
 bp = Blueprint("ui", __name__)
@@ -164,29 +164,35 @@ def add_smart():
     form = GuessForm()
 
     if request.method == "POST" and form.validate_on_submit():
-        page = parse(form.url.data, form.cookies.data)
+        try:
+            page = parse(form.url.data, form.cookies.data)
+        except ParseError as e:
+            form.url.errors = [str(e)]
+        else:
+            args = {k: v for k, v in form.data.items() if k != "submit" and v}
 
-        args = {k: v for k, v in form.data.items() if k != "submit" and v}
-
-        if (tag := page.find("title")) and (
-            lookup := sonarr.series_lookup(tag.text)
-        ):
-            if parsed := (
-                sonarr.parse(tag.text) or sonarr.parse(tag.text, strip=True)
+            if (tag := page.find("title")) and (
+                lookup := sonarr.series_lookup(tag.text)
             ):
-                if parsed.season_number > 0:
-                    args["season"] = parsed.season_number
-                if parsed.quality.quality.name != "Unknown":
-                    args["quality"] = parsed.quality.quality.name
-                if parsed.language.name != "English":
-                    args["language"] = parsed.language.name
-            if len(lookup) == 1:
-                return redirect(
-                    url_for("ui.add_source", tvdb_id=lookup[0].tvdb_id, **args)
-                )
-            else:
-                args["tvdb_id"] = [series.tvdb_id for series in lookup]
+                if parsed := (
+                    sonarr.parse(tag.text)
+                    or sonarr.parse(tag.text, strip=True)
+                ):
+                    if parsed.season_number > 0:
+                        args["season"] = parsed.season_number
+                    if parsed.quality.quality.name != "Unknown":
+                        args["quality"] = parsed.quality.quality.name
+                    if parsed.language.name != "English":
+                        args["language"] = parsed.language.name
+                if len(lookup) == 1:
+                    return redirect(
+                        url_for(
+                            "ui.add_source", tvdb_id=lookup[0].tvdb_id, **args
+                        )
+                    )
+                else:
+                    args["tvdb_id"] = [series.tvdb_id for series in lookup]
 
-        return redirect(url_for("ui.add", **args))
+            return redirect(url_for("ui.add", **args))
 
     return render_template("add_smart.html", form=form)
