@@ -86,6 +86,12 @@ class SourceForm(FlaskForm):
         self.quality.choices = choices
 
 
+class GeneralConfigForm(FlaskForm):
+    user_agent = StringField(
+        "User Agent", [validators.input_required()], [strip_filter]
+    )
+
+
 class SonarrConfigForm(FlaskForm):
     url = URLField("URL", [validators.input_required()], [strip_filter])
     apikey = StringField(
@@ -94,6 +100,7 @@ class SonarrConfigForm(FlaskForm):
 
 
 class ConfigForm(FlaskForm):
+    general = FormField(GeneralConfigForm)
     sonarr = FormField(SonarrConfigForm)
     submit = SubmitField(render_kw={"hidden": True})
 

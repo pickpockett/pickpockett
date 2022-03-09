@@ -4,6 +4,8 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
+from . import config
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,17 +51,17 @@ HEADERS = {
     "Connection": "keep-alive",
     "Pragma": "no-cache",
     "Upgrade-Insecure-Requests": "1",
-    "User-Agent": (
-        "Mozilla/5.0 (X11; Linux x86_64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/99.0.4844.51 Safari/537.36"
-    ),
 }
 
 
 def parse(url, cookies):
     req_cookies = _prepare_cookies(cookies)
-    headers = {**HEADERS, "Referer": url}
+    conf = config.load()
+    headers = {
+        **HEADERS,
+        "Referer": url,
+        "User-Agent": conf.general.user_agent,
+    }
 
     try:
         response = requests.get(

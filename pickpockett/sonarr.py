@@ -264,5 +264,5 @@ Series.update_forward_refs()
 
 
 def get_sonarr():
-    if conf := config.load():
-        return Sonarr(conf.sonarr)
+    if conf_sonarr := config.load().sonarr:
+        return Sonarr(conf_sonarr)

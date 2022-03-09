@@ -4,13 +4,22 @@ from typing import Optional
 from pydantic import AnyHttpUrl, BaseModel
 
 
+class GeneralConfig(BaseModel):
+    user_agent: str = (
+        "Mozilla/5.0 (X11; Linux x86_64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/99.0.4844.51 Safari/537.36"
+    )
+
+
 class SonarrConfig(BaseModel):
     url: AnyHttpUrl
     apikey: str
 
 
 class Config(BaseModel):
-    sonarr: SonarrConfig
+    general: GeneralConfig = GeneralConfig()
+    sonarr: Optional[SonarrConfig]
 
 
 class ConfigManager:
@@ -19,8 +28,11 @@ class ConfigManager:
         self.config: Optional[Config] = None
 
     def load(self):
-        if not self.config and self.path.exists():
-            self.config = Config.parse_file(self.path)
+        if self.config is None:
+            if self.path.exists():
+                self.config = Config.parse_file(self.path)
+            else:
+                self.config = Config()
         return self.config
 
     def save(self, obj):
