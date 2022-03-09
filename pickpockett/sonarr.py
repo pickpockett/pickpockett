@@ -176,8 +176,9 @@ class Sonarr:
 
     def _get(self, endpoint, **kwargs):
         url = self._url(endpoint)
+        headers = {"User-Agent": "PickPockett"}
         params = {"apikey": self.apikey, **kwargs}
-        r = requests.get(url, params=params)
+        r = requests.get(url, headers=headers, params=params)
         if r.ok:
             return r.json()
         return []
