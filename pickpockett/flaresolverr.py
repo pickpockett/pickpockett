@@ -23,8 +23,9 @@ class FlareSolverrResponse(BaseModel):
 
 
 class FlareSolverr:
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, flaresolverr_config):
+        self.url = flaresolverr_config.url
+        self.timeout = flaresolverr_config.timeout
 
     def solve(self, url, cookies=None) -> FlareSolverrResponse:
         cookies = cookies or {}
@@ -35,7 +36,12 @@ class FlareSolverr:
         response = requests.post(
             urljoin(self.url, "v1"),
             headers=headers,
-            json={"cmd": "request.get", "cookies": req_cookies, "url": url},
+            json={
+                "cmd": "request.get",
+                "cookies": req_cookies,
+                "maxTimeout": self.timeout,
+                "url": url,
+            },
         )
         response.raise_for_status()
         return FlareSolverrResponse.parse_obj(response.json())

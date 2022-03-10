@@ -4,6 +4,7 @@ from flask_wtf import FlaskForm
 from markupsafe import Markup
 from wtforms import (
     FormField,
+    IntegerField,
     SelectField,
     StringField,
     SubmitField,
@@ -127,6 +128,10 @@ class GeneralConfigForm(FlaskForm):
 
 class FlareSolverrForm(FlaskForm):
     url = URLField("URL", [validators.input_required()], [strip_filter])
+    timeout = IntegerField(
+        "Timeout (ms)",
+        [validators.optional(), validators.number_range(min=0)],
+    )
 
 
 class SonarrConfigForm(FlaskForm):

@@ -10,6 +10,7 @@ class GeneralConfig(BaseModel):
 
 class FlareSolverrConfig(BaseModel):
     url: AnyHttpUrl
+    timeout: int = 60000
 
 
 class SonarrConfig(BaseModel):
