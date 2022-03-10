@@ -176,6 +176,8 @@ def add_smart():
             page, cookies, user_agent = parse(
                 form.url.data, form.cookies.data, form.user_agent.data
             )
+            if "magnet://" not in str(page):
+                raise ParseError("No magnet link found")
         except ParseError as e:
             form.url.errors = [str(e)]
         else:
