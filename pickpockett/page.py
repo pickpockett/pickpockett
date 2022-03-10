@@ -1,10 +1,12 @@
 import json
 import logging
+from http import HTTPStatus
 
 import requests
 from bs4 import BeautifulSoup
 
 from . import config
+from .flare_solverr import FlareSolverr
 
 logger = logging.getLogger(__name__)
 
@@ -54,21 +56,38 @@ HEADERS = {
 }
 
 
-def parse(url, cookies):
+def _get_page(url, cookies, user_agent):
     req_cookies = _prepare_cookies(cookies)
     conf = config.load()
     headers = {
         **HEADERS,
         "Referer": url,
     }
-    if conf.general and (user_agent := conf.general.user_agent):
+    if not user_agent and conf.general and conf.general.user_agent:
+        user_agent = conf.general.user_agent
+    if user_agent:
         headers["User-Agent"] = user_agent
 
+    response = requests.get(
+        url, cookies=req_cookies, headers=headers, timeout=5
+    )
+    if response.status_code >= HTTPStatus.BAD_REQUEST and conf.flare_solverr:
+        flare_solverr = FlareSolverr(conf.flare_solverr.url)
+        try:
+            solution = flare_solverr.solve(url, req_cookies).solution
+        except Exception as e:
+            logger.error(e)
+        else:
+            logger.info("challenge solved: %s", url)
+            return solution.response, solution.cookies, solution.user_agent
+
+    response.raise_for_status()
+    return response.text, response.cookies.get_dict(), user_agent
+
+
+def parse(url, cookies, user_agent):
     try:
-        response = requests.get(
-            url, cookies=req_cookies, headers=headers, timeout=5
-        )
-        response.raise_for_status()
+        text, cookies, user_agent = _get_page(url, cookies, user_agent)
     except requests.HTTPError as e:
         logger.error(e)
         if e.response is not None:
@@ -89,6 +108,5 @@ def parse(url, cookies):
         logger.error(e)
         raise ParseError("Unknown Error")
 
-    bs = BeautifulSoup(response.text, "html.parser")
-    bs.cookies = response.cookies
-    return bs
+    bs = BeautifulSoup(text, "html.parser")
+    return bs, cookies, user_agent

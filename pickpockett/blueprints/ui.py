@@ -72,7 +72,9 @@ def edit(source_id):
     form.quality_choices(sonarr.get_qualities())
 
     if request.method == "POST" and form.validate_on_submit():
-        magnet, err = get_magnet(form.url.data, form.cookies.data)
+        magnet, err = get_magnet(
+            form.url.data, form.cookies.data, form.user_agent.data
+        )
         if err:
             form.url.errors = [err]
         else:
@@ -80,6 +82,7 @@ def edit(source_id):
                 url=form.url.data,
                 season=form.season.data,
                 cookies=magnet.cookies,
+                user_agent=magnet.user_agent,
                 quality=form.quality.data,
                 language=form.language.data,
                 error="",
@@ -125,7 +128,9 @@ def add_source(tvdb_id):
     form.quality_choices(sonarr.get_qualities())
 
     if request.method == "POST" and form.validate_on_submit():
-        magnet, err = get_magnet(form.url.data, form.cookies.data)
+        magnet, err = get_magnet(
+            form.url.data, form.cookies.data, form.user_agent.data
+        )
         if err:
             form.url.errors = [err]
         else:
@@ -134,6 +139,7 @@ def add_source(tvdb_id):
                 url=form.url.data,
                 season=form.season.data,
                 cookies=magnet.cookies,
+                user_agent=magnet.user_agent,
                 quality=form.quality.data,
                 language=form.language.data,
             )
@@ -167,7 +173,7 @@ def add_smart():
 
     if request.method == "POST" and form.validate_on_submit():
         try:
-            page = parse(form.url.data, form.cookies.data)
+            page, cookies, user_agent = parse(form.url.data, form.cookies.data)
         except ParseError as e:
             form.url.errors = [str(e)]
         else:

@@ -29,18 +29,6 @@ class SourceForm(FlaskForm):
         description="Where to find a magnet link",
         widget=TextArea(),
     )
-    cookies = TextAreaField(
-        "Cookies",
-        [validators.optional()],
-        [strip_filter],
-        description=(
-            "(optional) Used for authentication."
-            " The value can change between requests."
-            ' Here is an <a href="https://chrome.google.com/webstore/detail'
-            '/copy-cookies/jcbpglbplpblnagieibnemmkiamekcdg">extension</a>'
-            " to copy cookies of a web page"
-        ),
-    )
     season = SelectField(
         "Season",
         coerce=int,
@@ -56,6 +44,24 @@ class SourceForm(FlaskForm):
     )
     language = SelectField(
         "Language", description='(optional) Empty means "English" to Sonarr'
+    )
+    cookies = TextAreaField(
+        "Cookies",
+        [validators.optional()],
+        [strip_filter],
+        description=(
+            "(optional) Used for authentication."
+            " The value can change between requests."
+            ' Here is an <a href="https://chrome.google.com/webstore/detail'
+            '/copy-cookies/jcbpglbplpblnagieibnemmkiamekcdg">extension</a>'
+            " to copy cookies of a web page"
+        ),
+    )
+    user_agent = TextAreaField(
+        "User Agent",
+        [validators.optional()],
+        [strip_filter],
+        description="(optional) Could be helpful to bypass Cloudflare",
     )
     submit = SubmitField(render_kw={"hidden": True})
 
@@ -119,6 +125,10 @@ class GeneralConfigForm(FlaskForm):
     )
 
 
+class FlareSolverrForm(FlaskForm):
+    url = URLField("URL", [validators.input_required()], [strip_filter])
+
+
 class SonarrConfigForm(FlaskForm):
     url = URLField("URL", [validators.input_required()], [strip_filter])
     apikey = StringField(
@@ -129,6 +139,7 @@ class SonarrConfigForm(FlaskForm):
 class ConfigForm(FlaskForm):
     general = FormField(GeneralConfigForm)
     sonarr = FormField(SonarrConfigForm)
+    flare_solverr = FormField(FlareSolverrForm)
     submit = SubmitField(render_kw={"hidden": True})
 
 

@@ -26,6 +26,7 @@ class Source(db.Model):
     )
     url = db.Column(db.Text, nullable=False)
     cookies = db.Column(db.Text, nullable=False, server_default="")
+    user_agent = db.Column(db.Text, nullable=False, server_default="")
     hash = db.Column(db.String(40), nullable=False, server_default="")
     datetime = db.Column(db.DateTime)
     quality = db.Column(db.Text, nullable=False, default=DEFAULT_QUALITY)
@@ -57,6 +58,8 @@ class Source(db.Model):
         return ", ".join(e for e in (self.language, self.quality) if e)
 
     def update_magnet(self, magnet: Magnet):
+        self.cookies = magnet.cookies or ""
+        self.user_agent = magnet.user_agent or ""
         if self.hash != magnet.hash:
             logger.info(
                 "[tbdbid:%i]: hash update: %r => %r",
@@ -66,7 +69,7 @@ class Source(db.Model):
             )
             self.hash = magnet.hash
             self.datetime = datetime.utcnow()
-            db.session.commit()
+        db.session.commit()
 
     def update_error(self, err):
         self.error = err or ""

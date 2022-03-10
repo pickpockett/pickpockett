@@ -3,17 +3,16 @@ import logging
 from typing import Dict, List, Optional, cast
 from urllib.parse import parse_qs, urlparse
 
-from requests.utils import dict_from_cookiejar
-
 from .page import ParseError, parse
 
 logger = logging.getLogger(__name__)
 
 
 class Magnet:
-    def __init__(self, url, cookies=""):
+    def __init__(self, url, cookies="", user_agent=""):
         self.url = url
         self.cookies = cookies
+        self.user_agent = user_agent
         self._hash = None
 
     @property
@@ -32,12 +31,12 @@ def _magnet_link(tag):
     )
 
 
-def _find_magnet_link(url, cookies) -> Optional[Magnet]:
-    page = parse(url, cookies)
+def _find_magnet_link(url, cookies, user_agent) -> Optional[Magnet]:
+    page, page_cookies, user_agent = parse(url, cookies, user_agent)
     if tag := page.find(_magnet_link):
-        if cookies and (res_cookies := dict_from_cookiejar(page.cookies)):
-            cookies = json.dumps(res_cookies)
-        return Magnet(tag["href"], cookies)
+        if (cookies or user_agent) and page_cookies:
+            cookies = json.dumps(page_cookies)
+        return Magnet(tag["href"], cookies, user_agent)
 
     return Magnet(None)
 
@@ -50,9 +49,9 @@ def _hash_from_magnet(magnet_url):
     return infohash
 
 
-def get_magnet(url, cookies=""):
+def get_magnet(url, cookies, user_agent):
     try:
-        magnet = _find_magnet_link(url, cookies)
+        magnet = _find_magnet_link(url, cookies, user_agent)
     except ParseError as e:
         return None, str(e)
 

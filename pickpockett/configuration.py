@@ -8,6 +8,10 @@ class GeneralConfig(BaseModel):
     user_agent: str
 
 
+class FlareSolverrConfig(BaseModel):
+    url: AnyHttpUrl
+
+
 class SonarrConfig(BaseModel):
     url: AnyHttpUrl
     apikey: str
@@ -16,6 +20,7 @@ class SonarrConfig(BaseModel):
 class Config(BaseModel):
     general: Optional[GeneralConfig]
     sonarr: Optional[SonarrConfig]
+    flare_solverr: Optional[FlareSolverrConfig]
 
 
 class ConfigManager:

@@ -159,7 +159,7 @@ def _get_items(q, tvdb_id, season):
         if not episodes:
             continue
 
-        magnet, err = get_magnet(source.url, source.cookies)
+        magnet, err = get_magnet(source.url, source.cookies, source.user_agent)
         source.update_error(err)
 
         if magnet and magnet.url is None:
