@@ -159,7 +159,7 @@ class GuessForm(FlaskForm):
         "URL",
         [validators.input_required()],
         [strip_filter],
-        description="Guess a series by this link",
+        description="Guess a series from this link",
         widget=TextArea(),
     )
     cookies = TextAreaField(
