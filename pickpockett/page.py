@@ -86,7 +86,7 @@ def _get_page(url, cookies, user_agent):
             return solution.response, solution.cookies, solution.user_agent
 
     response.raise_for_status()
-    return response.text, response.cookies.get_dict(), user_agent
+    return response.text, response.cookies.get_dict(), None
 
 
 def parse(url, cookies, user_agent):

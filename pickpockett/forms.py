@@ -18,6 +18,29 @@ from .models import ALL_SEASONS, DEFAULT_QUALITY
 from .sonarr import Season
 
 
+class UserAgentInput(TextInput):
+    def __call__(self, field, **kwargs):
+        input_tag = super().__call__(field, **kwargs)
+        return Markup(
+            '<div class="input-group">'
+            "   %s"
+            "   <button %s>%s</button>"
+            "</div>"
+            % (
+                input_tag,
+                self.html_params(
+                    class_="btn btn-outline-secondary",
+                    type="button",
+                    onclick=(
+                        "getElementById('%s').value="
+                        "window.navigator.userAgent" % field.id
+                    ),
+                ),
+                "FILL",
+            )
+        )
+
+
 def strip_filter(value: str):
     return value.strip() if isinstance(value, str) else value
 
@@ -58,11 +81,12 @@ class SourceForm(FlaskForm):
             " to copy cookies of a web page"
         ),
     )
-    user_agent = TextAreaField(
+    user_agent = StringField(
         "User Agent",
         [validators.optional()],
         [strip_filter],
         description="(optional) Could be helpful to bypass Cloudflare",
+        widget=UserAgentInput(),
     )
     submit = SubmitField(render_kw={"hidden": True})
 
@@ -92,29 +116,6 @@ class SourceForm(FlaskForm):
         if current_quality not in choices:
             choices.insert(0, current_quality)
         self.quality.choices = choices
-
-
-class UserAgentInput(TextInput):
-    def __call__(self, field, **kwargs):
-        input_tag = super().__call__(field, **kwargs)
-        return Markup(
-            '<div class="input-group">'
-            "   %s"
-            "   <button %s>%s</button>"
-            "</div>"
-            % (
-                input_tag,
-                self.html_params(
-                    class_="btn btn-outline-secondary",
-                    type="button",
-                    onclick=(
-                        "getElementById('%s').value="
-                        "window.navigator.userAgent" % field.id
-                    ),
-                ),
-                "FILL",
-            )
-        )
 
 
 class GeneralConfigForm(FlaskForm):
@@ -171,5 +172,12 @@ class GuessForm(FlaskForm):
             '/copy-cookies/jcbpglbplpblnagieibnemmkiamekcdg">extension</a>'
             " to copy cookies of a web page"
         ),
+    )
+    user_agent = StringField(
+        "User Agent",
+        [validators.optional()],
+        [strip_filter],
+        description="(optional) Could be helpful to bypass Cloudflare",
+        widget=UserAgentInput(),
     )
     submit = SubmitField(render_kw={"hidden": True})

@@ -58,8 +58,10 @@ class Source(db.Model):
         return ", ".join(e for e in (self.language, self.quality) if e)
 
     def update_magnet(self, magnet: Magnet):
-        self.cookies = magnet.cookies or ""
-        self.user_agent = magnet.user_agent or ""
+        if magnet.cookies:
+            self.cookies = magnet.cookies
+        if magnet.user_agent:
+            self.user_agent = magnet.user_agent
         if self.hash != magnet.hash:
             logger.info(
                 "[tbdbid:%i]: hash update: %r => %r",

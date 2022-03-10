@@ -173,11 +173,17 @@ def add_smart():
 
     if request.method == "POST" and form.validate_on_submit():
         try:
-            page, cookies, user_agent = parse(form.url.data, form.cookies.data)
+            page, cookies, user_agent = parse(
+                form.url.data, form.cookies.data, form.user_agent.data
+            )
         except ParseError as e:
             form.url.errors = [str(e)]
         else:
             args = {k: v for k, v in form.data.items() if k != "submit" and v}
+            if cookies:
+                args["cookies"] = cookies
+            if user_agent:
+                args["user_agent"] = user_agent
 
             if (tag := page.find("title")) and (
                 lookup := sonarr.series_lookup(tag.text)
