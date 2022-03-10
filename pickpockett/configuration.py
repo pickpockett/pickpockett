@@ -20,7 +20,7 @@ class SonarrConfig(BaseModel):
 class Config(BaseModel):
     general: Optional[GeneralConfig]
     sonarr: Optional[SonarrConfig]
-    flare_solverr: Optional[FlareSolverrConfig]
+    flaresolverr: Optional[FlareSolverrConfig]
 
 
 class ConfigManager:

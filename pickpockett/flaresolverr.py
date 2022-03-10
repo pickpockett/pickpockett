@@ -4,8 +4,6 @@ from urllib.parse import urljoin
 import requests
 from pydantic import BaseModel, validator
 
-from . import config
-
 
 class FlareSolverrSolution(BaseModel):
     cookies: Dict[str, Any]
@@ -41,8 +39,3 @@ class FlareSolverr:
         )
         response.raise_for_status()
         return FlareSolverrResponse.parse_obj(response.json())
-
-
-def get_flare_solverr():
-    if conf_flare_solverr := config.load().flare_solverr:
-        return FlareSolverr(conf_flare_solverr.url)

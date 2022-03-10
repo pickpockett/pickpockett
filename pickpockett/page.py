@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from . import config
-from .flare_solverr import FlareSolverr
+from .flaresolverr import FlareSolverr
 
 logger = logging.getLogger(__name__)
 
@@ -71,10 +71,10 @@ def _get_page(url, cookies, user_agent):
     response = requests.get(
         url, cookies=req_cookies, headers=headers, timeout=5
     )
-    if response.status_code >= HTTPStatus.BAD_REQUEST and conf.flare_solverr:
-        flare_solverr = FlareSolverr(conf.flare_solverr.url)
+    if response.status_code >= HTTPStatus.BAD_REQUEST and conf.flaresolverr:
+        flaresolverr = FlareSolverr(conf.flaresolverr.url)
         try:
-            solution = flare_solverr.solve(url, req_cookies).solution
+            solution = flaresolverr.solve(url, req_cookies).solution
         except Exception as e:
             logger.error(e)
         else:
