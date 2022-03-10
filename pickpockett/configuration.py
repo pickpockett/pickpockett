@@ -9,7 +9,7 @@ class GeneralConfig(BaseModel):
 
 
 class FlareSolverrConfig(BaseModel):
-    url: AnyHttpUrl
+    url: Optional[AnyHttpUrl]
     timeout: int = 60000
 
 

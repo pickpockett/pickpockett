@@ -71,7 +71,11 @@ def _get_page(url, cookies, user_agent):
     response = requests.get(
         url, cookies=req_cookies, headers=headers, timeout=5
     )
-    if response.status_code >= HTTPStatus.BAD_REQUEST and conf.flaresolverr:
+    if (
+        response.status_code >= HTTPStatus.BAD_REQUEST
+        and conf.flaresolverr
+        and conf.flaresolverr.url
+    ):
         flaresolverr = FlareSolverr(conf.flaresolverr)
         try:
             solution = flaresolverr.solve(url, req_cookies).solution

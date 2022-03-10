@@ -127,7 +127,12 @@ class GeneralConfigForm(FlaskForm):
 
 
 class FlareSolverrForm(FlaskForm):
-    url = URLField("URL", [validators.input_required()], [strip_filter])
+    url = URLField(
+        "URL",
+        [validators.optional()],
+        [strip_filter],
+        description="optional",
+    )
     timeout = IntegerField(
         "Timeout (ms)",
         [validators.optional(), validators.number_range(min=0)],
