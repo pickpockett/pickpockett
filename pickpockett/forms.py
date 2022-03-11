@@ -149,9 +149,9 @@ class SonarrConfigForm(FlaskForm):
 
 
 class ConfigForm(FlaskForm):
-    general = FormField(GeneralConfigForm)
-    sonarr = FormField(SonarrConfigForm)
-    flaresolverr = FormField(FlareSolverrForm)
+    general = FormField(GeneralConfigForm, "General")
+    sonarr = FormField(SonarrConfigForm, "Sonarr")
+    flaresolverr = FormField(FlareSolverrForm, "FlareSolverr")
     submit = SubmitField(render_kw={"hidden": True})
 
 
