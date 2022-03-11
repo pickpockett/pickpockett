@@ -12,7 +12,7 @@ from wtforms import (
     URLField,
     validators,
 )
-from wtforms.widgets import TextArea, TextInput
+from wtforms.widgets import NumberInput, TextArea, TextInput
 
 from .models import ALL_SEASONS, DEFAULT_QUALITY
 from .sonarr import Season
@@ -137,6 +137,7 @@ class FlareSolverrForm(FlaskForm):
     timeout = IntegerField(
         "Timeout (ms)",
         [validators.optional(), validators.number_range(min=0)],
+        widget=NumberInput(step=1000),
     )
 
 
