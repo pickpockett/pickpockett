@@ -8,8 +8,16 @@ class GeneralConfig(BaseModel):
     user_agent: str
 
 
+class OptionalHttpUrl(AnyHttpUrl):
+    @classmethod
+    def validate(cls, value, field, config):
+        if value:
+            return super().validate(value, field, config)
+        return ""
+
+
 class FlareSolverrConfig(BaseModel):
-    url: Optional[AnyHttpUrl]
+    url: OptionalHttpUrl
     timeout: int = 60000
 
 
