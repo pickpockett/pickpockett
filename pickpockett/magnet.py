@@ -9,8 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class Magnet:
-    def __init__(self, url, cookies="", user_agent=""):
+    def __init__(self, url, page=None, cookies="", user_agent=""):
         self.url = url
+        self.page = page
         self.cookies = cookies
         self.user_agent = user_agent
         self._hash = None
@@ -36,7 +37,7 @@ def _find_magnet_link(url, cookies, user_agent) -> Optional[Magnet]:
     if tag := page.find(_magnet_link):
         if (cookies or user_agent) and page_cookies:
             cookies = json.dumps(page_cookies)
-        return Magnet(tag["href"], cookies, user_agent)
+        return Magnet(tag["href"], page, cookies, user_agent)
 
     return Magnet(None)
 

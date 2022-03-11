@@ -11,7 +11,6 @@ from .. import config
 from ..forms import ConfigForm, GuessForm, SourceForm
 from ..magnet import get_magnet
 from ..models import Source
-from ..page import ParseError, parse
 from ..sonarr import Series, get_sonarr
 
 bp = Blueprint("ui", __name__)
@@ -172,22 +171,19 @@ def add_smart():
     form = GuessForm()
 
     if request.method == "POST" and form.validate_on_submit():
-        try:
-            page, cookies, user_agent = parse(
-                form.url.data, form.cookies.data, form.user_agent.data
-            )
-            if "magnet://" not in str(page):
-                raise ParseError("No magnet link found")
-        except ParseError as e:
-            form.url.errors = [str(e)]
+        magnet, err = get_magnet(
+            form.url.data, form.cookies.data, form.user_agent.data
+        )
+        if err:
+            form.url.errors = [err]
         else:
             args = {k: v for k, v in form.data.items() if k != "submit" and v}
-            if cookies:
-                args["cookies"] = cookies
-            if user_agent:
-                args["user_agent"] = user_agent
+            if magnet.cookies:
+                args["cookies"] = magnet.cookies
+            if magnet.user_agent:
+                args["user_agent"] = magnet.user_agent
 
-            if (tag := page.find("title")) and (
+            if (tag := magnet.page.find("title")) and (
                 lookup := sonarr.series_lookup(tag.text)
             ):
                 if parsed := (
