@@ -1,7 +1,7 @@
 import json
 import logging
 from typing import Dict, List, Optional, cast
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from .page import ParseError, parse
 
@@ -32,12 +32,24 @@ def _magnet_link(tag):
     )
 
 
-def _find_magnet_link(url, cookies, user_agent) -> Optional[Magnet]:
+def _find_magnet_link(
+    url, cookies, user_agent, display_name
+) -> Optional[Magnet]:
     page, page_cookies, user_agent = parse(url, cookies, user_agent)
     if tag := page.find(_magnet_link):
+        magnet_link = tag["href"]
+        if display_name:
+            parsed = urlparse(magnet_link)
+            params = cast(Dict[str, List[str]], parse_qs(parsed.query))
+            params["dn"] = [display_name]
+            query = urlencode(params, doseq=True, safe=":/")
+            parsed = parsed._replace(query=query)
+            magnet_link = parsed.geturl()
+
         if (cookies or user_agent) and page_cookies:
             cookies = json.dumps(page_cookies)
-        return Magnet(tag["href"], page, cookies, user_agent)
+
+        return Magnet(magnet_link, page, cookies, user_agent)
 
     return Magnet(None)
 
@@ -50,9 +62,9 @@ def _hash_from_magnet(magnet_url):
     return infohash
 
 
-def get_magnet(url, cookies, user_agent):
+def get_magnet(url, cookies, user_agent, display_name=None):
     try:
-        magnet = _find_magnet_link(url, cookies, user_agent)
+        magnet = _find_magnet_link(url, cookies, user_agent, display_name)
     except ParseError as e:
         return None, str(e)
 
