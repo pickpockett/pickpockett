@@ -12,6 +12,7 @@
 <thead>
     <tr>
         <th>Title</th>
+        <th></th>
         <th>Season</th>
         <th>Quality</th>
         <th>Language</th>
@@ -23,14 +24,17 @@
 {% for ss in series_sources %}
     <tr{% if ss.completed %} class="table-info"{% elif ss.source.error %} class="table-danger"{% endif %}>
         <td>
-            <a class="px-2" href="{{ url_for('ui.edit', source_id=ss.source.id) }}">
+            <a href="{{ url_for('ui.edit', source_id=ss.source.id) }}">
                 <img class="poster px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
                 {{- ss.series.title -}}
             </a>
+            <a class="badge text-decoration-none" href="{{ ss.source.url }}" target="_blank">&bull;</a>
+        </td>
+        <td class="text-center text-uppercase">
             {% if ss.completed %}
-            <span class="badge bg-success text-uppercase">Completed</span>
+            <span class="badge bg-success">Completed</span>
             {% elif ss.source.error %}
-            <span class="badge bg-danger text-uppercase" title="{{ ss.source.error }}">Error</span>
+            <span class="badge bg-danger" title="{{ ss.source.error }}">Error</span>
             {% endif %}
         </td>
         <td>{{ ss.season }}</td>
