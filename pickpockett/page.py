@@ -83,10 +83,12 @@ def _get_page(url, cookies, user_agent):
             logger.error(e)
         else:
             logger.info("challenge solved: %s", url)
-            return solution.response, solution.cookies, solution.user_agent
+            new_cookies = {**req_cookies, **solution.cookies}
+            return solution.response, new_cookies, solution.user_agent
 
     response.raise_for_status()
-    return response.text, response.cookies.get_dict(), ""
+    new_cookies = {**req_cookies, **response.cookies.get_dict()}
+    return response.text, new_cookies, ""
 
 
 def parse(url, cookies, user_agent):
