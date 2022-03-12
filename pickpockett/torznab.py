@@ -136,7 +136,7 @@ def _query(q, tvdb_id, season):
     return query.all()
 
 
-def _get_items(q, tvdb_id, season):
+def _get_items(q, tvdb_id, season, episode):
     if (sonarr := get_sonarr()) is None:
         logger.warning(
             "PickPockett is not configured yet,"
@@ -175,7 +175,13 @@ def _get_items(q, tvdb_id, season):
         if source.datetime < max(ep.air_date_utc for ep in episodes):
             continue
 
+        episode_number = int(episode) if episode else None
         for ep in episodes:
+            if not (
+                episode_number is None or ep.episode_number == episode_number
+            ):
+                continue
+
             ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
             ep_name = f"{series.title} {ep_repr}"
             if ep.has_file:
@@ -209,8 +215,8 @@ def _get_items(q, tvdb_id, season):
     return items
 
 
-def tv_search(q=None, tvdbid=None, season=None, **_):
-    items = _get_items(q, tvdbid, season)
+def tv_search(q=None, tvdbid=None, season=None, ep=None, **_):
+    items = _get_items(q, tvdbid, season, ep)
 
     root = et.Element(
         "rss",
