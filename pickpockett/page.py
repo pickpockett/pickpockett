@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def _prepare_cookies(cookies):
     if not cookies:
-        return None
+        return {}
 
     cookies_orig = cookies
 
