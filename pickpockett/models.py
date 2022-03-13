@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 
 from humanize import naturaltime
+from sqlalchemy import Column, DateTime, Integer, String, Text
 
 from . import db
 from .magnet import Magnet
@@ -17,19 +18,19 @@ DEFAULT_QUALITY = "WEBRip-1080p"
 class Source(db.Model):
     __tablename__ = "sources"
 
-    id = db.Column(db.Integer, primary_key=True)
-    tvdb_id = db.Column(db.Integer, nullable=False)
-    season: db.Column = db.Column(
-        db.Integer, nullable=False, server_default=str(ALL_SEASONS)
+    id = Column(Integer, primary_key=True)
+    tvdb_id = Column(Integer, nullable=False)
+    season: Column = Column(
+        Integer, nullable=False, server_default=str(ALL_SEASONS)
     )
-    url = db.Column(db.Text, nullable=False)
-    cookies = db.Column(db.Text, nullable=False, server_default="")
-    user_agent = db.Column(db.Text, nullable=False, server_default="")
-    hash = db.Column(db.String(40), nullable=False, server_default="")
-    datetime = db.Column(db.DateTime)
-    quality = db.Column(db.Text, nullable=False, default=DEFAULT_QUALITY)
-    language = db.Column(db.Text, nullable=False, server_default="")
-    error = db.Column(db.Text, nullable=False, server_default="")
+    url = Column(Text, nullable=False)
+    cookies = Column(Text, nullable=False, server_default="")
+    user_agent = Column(Text, nullable=False, server_default="")
+    hash = Column(String(40), nullable=False, server_default="")
+    datetime = Column(DateTime)
+    quality = Column(Text, nullable=False, default=DEFAULT_QUALITY)
+    language = Column(Text, nullable=False, server_default="")
+    error = Column(Text, nullable=False, server_default="")
 
     @classmethod
     def get(cls, ident) -> Source:
