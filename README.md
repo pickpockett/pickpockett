@@ -27,13 +27,13 @@ and point your browser to
 http://localhost:9119
 ```
 
-### Start using Docker:
+### Start using Docker
 
 ```
 docker run -d -p 9119:9119 pickpockett/pickpockett
 ```
 
-### docker-compose.yml:
+### docker-compose.yml
 
 ```
 version: "2.1"
