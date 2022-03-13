@@ -53,6 +53,14 @@ volumes:
 On the first start PickPockett asks for Sonarr configuration.
 Optionally, you can setup [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr).
 
+And then you need to add PickPockett to Sonarr as an indexer.
+
+## How it works
+
+Every time Sonarr reads RSS or performs automatic/manual search,
+PickPockett checks if there a magnet link update on a watched page and returns
+a list of episodes for a series.
+
 ## Screenshot
 
 ![screenshot](screenshot.png)
