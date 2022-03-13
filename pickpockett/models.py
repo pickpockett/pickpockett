@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import logging
-import os
 from datetime import datetime
 
 from humanize import naturaltime
-from pytz import timezone
 
 from . import db
 from .magnet import Magnet
@@ -82,7 +80,4 @@ class Source(db.Model):
         if self.datetime is None:
             return ""
 
-        tz, utc = timezone(os.environ.get("TZ") or "UTC"), timezone("UTC")
-        dt = self.datetime.replace(tzinfo=utc).astimezone(tz)
-        now = datetime.now(utc)
-        return naturaltime(dt, when=now)
+        return naturaltime(self.datetime, when=datetime.utcnow())
