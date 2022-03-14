@@ -7,12 +7,12 @@ It works as an indexer for [Sonarr](https://github.com/Sonarr/Sonarr) and allows
 
 ### Install
 
-It's recommended to use Python virtual environment to run PickPockett
+It's recommended to use Python virtual environment to run PickPockett.
 
 ```
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ### Run
@@ -27,7 +27,7 @@ and point your browser to
 http://localhost:9119
 ```
 
-### Start using Docker
+## Start using Docker
 
 ```
 docker run -d -p 9119:9119 pickpockett/pickpockett
@@ -50,15 +50,15 @@ volumes:
 
 ## Settings
 
-On the first start PickPockett asks for Sonarr configuration.
+On the first start, PickPockett asks for Sonarr configuration.
 Optionally, you can setup [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr).
 
-And then you need to add PickPockett to Sonarr as an indexer.
+And then, you need to add PickPockett to Sonarr as an indexer.
 
 ## How it works
 
 Every time Sonarr reads RSS or performs automatic/manual search,
-PickPockett checks if there a magnet link update on a watched page and returns
+PickPockett checks if there is a magnet link update on a watched page and returns
 a list of episodes for a series.
 
 ## Screenshot
