@@ -57,7 +57,7 @@ HEADERS = {
 
 
 def _get_page(url, cookies, user_agent):
-    req_cookies = _prepare_cookies(cookies)
+    cookies = _prepare_cookies(cookies)
     conf = config.load()
     headers = {
         **HEADERS,
@@ -68,9 +68,8 @@ def _get_page(url, cookies, user_agent):
     if user_agent:
         headers["User-Agent"] = user_agent
 
-    response = requests.get(
-        url, cookies=req_cookies, headers=headers, timeout=5
-    )
+    response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
+    cookies.update(response.cookies.get_dict())
     if (
         response.status_code >= HTTPStatus.BAD_REQUEST
         and conf.flaresolverr
@@ -78,17 +77,16 @@ def _get_page(url, cookies, user_agent):
     ):
         flaresolverr = FlareSolverr(conf.flaresolverr)
         try:
-            solution = flaresolverr.solve(url, req_cookies).solution
+            solution = flaresolverr.solve(url, cookies).solution
         except Exception as e:
             logger.error(e)
         else:
             logger.info("challenge solved: %s", url)
-            new_cookies = {**req_cookies, **solution.cookies}
-            return solution.response, new_cookies, solution.user_agent
+            cookies.update(solution.cookies)
+            return solution.response, cookies, solution.user_agent
 
     response.raise_for_status()
-    new_cookies = {**req_cookies, **response.cookies.get_dict()}
-    return response.text, new_cookies, ""
+    return response.text, cookies, ""
 
 
 def parse(url, cookies, user_agent):
