@@ -40,6 +40,7 @@ class Series(BaseModel):
     images: List[Image]
     seasons: List[Season]
     season_count: int
+    status: str
     sonarr: Sonarr
 
     class Config:
@@ -62,7 +63,14 @@ class Series(BaseModel):
 
     def completed(self, season):
         episode = self.sonarr.episode(self.id)
-        exist = [ep.has_file for ep in episode if ep.season_number == season]
+        exist = [
+            ep.has_file
+            for ep in episode
+            if ep.season_number == season
+            or season == ALL_SEASONS
+            and self.status == "ended"
+            and ep.season_number > 0
+        ]
         return exist and all(exist)
 
     def get_episodes(self, season, dt, missing=False) -> List[Episode]:
