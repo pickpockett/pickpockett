@@ -81,7 +81,7 @@ def edit(source_id):
                 url=form.url.data,
                 season=form.season.data,
                 cookies=magnet.cookies,
-                user_agent=magnet.user_agent,
+                user_agent=magnet.user_agent or form.user_agent.data,
                 quality=form.quality.data,
                 language=form.language.data,
                 error="",
@@ -138,7 +138,7 @@ def add_source(tvdb_id):
                 url=form.url.data,
                 season=form.season.data,
                 cookies=magnet.cookies,
-                user_agent=magnet.user_agent,
+                user_agent=magnet.user_agent or form.user_agent.data,
                 quality=form.quality.data,
                 language=form.language.data,
             )
@@ -180,8 +180,8 @@ def add_smart():
             args = {k: v for k, v in form.data.items() if k != "submit" and v}
             if magnet.cookies:
                 args["cookies"] = magnet.cookies
-            if magnet.user_agent:
-                args["user_agent"] = magnet.user_agent
+            if user_agent := (magnet.user_agent or form.user_agent.data):
+                args["user_agent"] = user_agent
 
             if (tag := magnet.page.find("title")) and (
                 lookup := sonarr.series_lookup(tag.text)
