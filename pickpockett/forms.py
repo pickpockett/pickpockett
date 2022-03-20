@@ -69,6 +69,12 @@ class SourceForm(FlaskForm):
     language = SelectField(
         "Language", description='(optional) Empty means "English" to Sonarr'
     )
+    schedule_correction = IntegerField(
+        "Schedule correction (days)",
+        [validators.number_range(min=0)],
+        description="Time delta between release date and air date",
+        widget=NumberInput(step=7),
+    )
     cookies = TextAreaField(
         "Cookies",
         [validators.optional()],

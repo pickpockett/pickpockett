@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from xml.etree import ElementTree as et
 
 from flask_sqlalchemy import BaseQuery
@@ -153,7 +153,11 @@ def _get_items(q, tvdb_id, season, episode):
             continue
 
         season_number = source.season if season is None else int(season)
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        schedule_correction = timedelta(days=source.schedule_correction)
+        now = (
+            datetime.now(timezone.utc).replace(tzinfo=None)
+            + schedule_correction
+        )
         missing = not bool(tvdb_id)
         episodes = series.get_episodes(season_number, now, missing)
         if not episodes:
@@ -174,7 +178,9 @@ def _get_items(q, tvdb_id, season, episode):
             continue
 
         source.update_magnet(magnet)
-        if source.datetime < max(ep.air_date_utc for ep in episodes):
+        if source.datetime + schedule_correction < max(
+            ep.air_date_utc for ep in episodes
+        ):
             continue
 
         episode_number = int(episode) if episode else None

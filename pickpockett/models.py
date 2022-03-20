@@ -26,6 +26,7 @@ class Source(db.Model):
         Integer, nullable=False, server_default=str(ALL_SEASONS)
     )
     url = Column(Text, nullable=False)
+    schedule_correction = Column(Integer, nullable=False, server_default="0")
     cookies = Column(Text, nullable=False, server_default="")
     user_agent = Column(Text, nullable=False, server_default="")
     hash = Column(String(40), nullable=False, server_default="")
