@@ -1,6 +1,6 @@
 from flask import Blueprint, redirect, render_template, request, url_for
 
-from ...forms import GuessForm, SourceForm
+from ...forms.source import GuessForm, SourceForm
 from ...magnet import get_magnet
 from ...models import Source
 from ...sonarr import get_sonarr

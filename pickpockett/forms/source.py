@@ -1,42 +1,13 @@
 from typing import List
 
 from flask_wtf import FlaskForm
-from markupsafe import Markup
-from wtforms import (
-    FormField,
-    IntegerField,
-    SelectField,
-    SubmitField,
-    validators,
-)
-from wtforms.widgets import NumberInput, TextArea, TextInput
+from wtforms import IntegerField, SelectField, SubmitField, validators
+from wtforms.widgets import NumberInput, TextArea
 
+from ..models import ALL_SEASONS, DEFAULT_QUALITY
+from ..sonarr import Season
 from .fields import StringField, TextAreaField, URLField
-from .models import ALL_SEASONS, DEFAULT_QUALITY
-from .sonarr import Season
-
-
-class UserAgentInput(TextInput):
-    def __call__(self, field, **kwargs):
-        input_tag = super().__call__(field, **kwargs)
-        return Markup(
-            '<div class="input-group">'
-            "   %s"
-            "   <button %s>%s</button>"
-            "</div>"
-            % (
-                input_tag,
-                self.html_params(
-                    class_="btn btn-outline-secondary",
-                    type="button",
-                    onclick=(
-                        "getElementById('%s').value="
-                        "window.navigator.userAgent" % field.id
-                    ),
-                ),
-                "FILL",
-            )
-        )
+from .widgets import UserAgentInput
 
 
 class SourceForm(FlaskForm):
@@ -113,33 +84,6 @@ class SourceForm(FlaskForm):
         if current_quality not in choices:
             choices.insert(0, current_quality)
         self.quality.choices = choices
-
-
-class GeneralConfigForm(FlaskForm):
-    user_agent = StringField(
-        "User Agent", required=True, widget=UserAgentInput()
-    )
-
-
-class FlareSolverrForm(FlaskForm):
-    url = URLField("URL", required=False, description="optional")
-    timeout = IntegerField(
-        "Timeout (ms)",
-        [validators.number_range(min=0)],
-        widget=NumberInput(step=1000),
-    )
-
-
-class SonarrConfigForm(FlaskForm):
-    url = URLField("URL", required=True)
-    apikey = StringField("API Key", required=True)
-
-
-class ConfigForm(FlaskForm):
-    general = FormField(GeneralConfigForm, "General")
-    sonarr = FormField(SonarrConfigForm, "Sonarr")
-    flaresolverr = FormField(FlareSolverrForm, "FlareSolverr")
-    submit = SubmitField(render_kw={"hidden": True})
 
 
 class GuessForm(FlaskForm):

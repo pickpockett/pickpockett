@@ -1,7 +1,7 @@
 from flask import Blueprint, redirect, render_template, request, url_for
 
 from ... import config
-from ...forms import ConfigForm
+from ...forms.config import ConfigForm
 
 bp = Blueprint("settings", __name__, url_prefix="/settings")
 

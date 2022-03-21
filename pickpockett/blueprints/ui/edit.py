@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from flask import Blueprint, redirect, render_template, request, url_for
 
-from ...forms import SourceForm
+from ...forms.source import SourceForm
 from ...magnet import get_magnet
 from ...models import Source
 from ...sonarr import get_sonarr
