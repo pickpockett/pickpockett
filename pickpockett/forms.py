@@ -6,14 +6,12 @@ from wtforms import (
     FormField,
     IntegerField,
     SelectField,
-    StringField,
     SubmitField,
-    TextAreaField,
-    URLField,
     validators,
 )
 from wtforms.widgets import NumberInput, TextArea, TextInput
 
+from .fields import StringField, TextAreaField, URLField
 from .models import ALL_SEASONS, DEFAULT_QUALITY
 from .sonarr import Season
 
@@ -41,15 +39,10 @@ class UserAgentInput(TextInput):
         )
 
 
-def strip_filter(value: str):
-    return value.strip() if isinstance(value, str) else value
-
-
 class SourceForm(FlaskForm):
     url = URLField(
         "URL",
-        [validators.input_required()],
-        [strip_filter],
+        required=True,
         description="Where to find a magnet link",
         widget=TextArea(),
     )
@@ -77,8 +70,7 @@ class SourceForm(FlaskForm):
     )
     cookies = TextAreaField(
         "Cookies",
-        [validators.optional()],
-        [strip_filter],
+        required=False,
         description=(
             "(optional) Used for authentication."
             " The value can change between requests."
@@ -89,8 +81,7 @@ class SourceForm(FlaskForm):
     )
     user_agent = StringField(
         "User Agent",
-        [validators.optional()],
-        [strip_filter],
+        required=False,
         description="(optional) Could be helpful to bypass Cloudflare",
         widget=UserAgentInput(),
     )
@@ -126,32 +117,22 @@ class SourceForm(FlaskForm):
 
 class GeneralConfigForm(FlaskForm):
     user_agent = StringField(
-        "User Agent",
-        [validators.input_required()],
-        [strip_filter],
-        widget=UserAgentInput(),
+        "User Agent", required=True, widget=UserAgentInput()
     )
 
 
 class FlareSolverrForm(FlaskForm):
-    url = URLField(
-        "URL",
-        [validators.optional()],
-        [strip_filter],
-        description="optional",
-    )
+    url = URLField("URL", required=False, description="optional")
     timeout = IntegerField(
         "Timeout (ms)",
-        [validators.optional(), validators.number_range(min=0)],
+        [validators.number_range(min=0)],
         widget=NumberInput(step=1000),
     )
 
 
 class SonarrConfigForm(FlaskForm):
-    url = URLField("URL", [validators.input_required()], [strip_filter])
-    apikey = StringField(
-        "API Key", [validators.input_required()], [strip_filter]
-    )
+    url = URLField("URL", required=True)
+    apikey = StringField("API Key", required=True)
 
 
 class ConfigForm(FlaskForm):
@@ -164,15 +145,13 @@ class ConfigForm(FlaskForm):
 class GuessForm(FlaskForm):
     url = URLField(
         "URL",
-        [validators.input_required()],
-        [strip_filter],
+        required=True,
         description="Guess a series from this link",
         widget=TextArea(),
     )
     cookies = TextAreaField(
         "Cookies",
-        [validators.optional()],
-        [strip_filter],
+        required=False,
         description=(
             "(optional) Used for authentication."
             ' Here is an <a href="https://chrome.google.com/webstore/detail'
@@ -182,8 +161,7 @@ class GuessForm(FlaskForm):
     )
     user_agent = StringField(
         "User Agent",
-        [validators.optional()],
-        [strip_filter],
+        required=False,
         description="(optional) Could be helpful to bypass Cloudflare",
         widget=UserAgentInput(),
     )
