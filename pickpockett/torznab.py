@@ -136,6 +136,72 @@ def _query(q, tvdb_id, season):
     return query.all()
 
 
+def _source_items(sonarr, source, season, episode, missing):
+    items = []
+    series = sonarr.get_series(source.tvdb_id)
+    if series is None:
+        return []
+
+    season_number = source.season if season is None else int(season)
+    schedule_correction = timedelta(days=source.schedule_correction)
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + schedule_correction
+    episodes = series.get_episodes(season_number, now, missing)
+    if not episodes:
+        return []
+
+    magnet, err = get_magnet(
+        source.url, source.cookies, source.user_agent, series.title
+    )
+    source.update_error(err)
+
+    if magnet and magnet.url is None:
+        logger.error(
+            "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.url
+        )
+        return []
+    if err:
+        logger.error("[tvdbid:%i]: error: %s", source.tvdb_id, err)
+        return []
+
+    source.update_magnet(magnet)
+    recent_air_date = max(ep.air_date_utc for ep in episodes)
+    if source.datetime + schedule_correction < recent_air_date:
+        return []
+
+    episode_number = int(episode) if episode else None
+    for ep in episodes:
+        if episode_number is not None and ep.episode_number != episode_number:
+            continue
+
+        ep_name = (
+            f"{series.title} S{ep.season_number:02}E{ep.episode_number:02}"
+        )
+
+        if ep.has_file:
+            logger.info(
+                "[tvdbid:%i]: episode exists: %s", source.tvdb_id, ep_name
+            )
+        else:
+            logger.info(
+                "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
+            )
+
+        if extra := source.extra:
+            ep_name += f" [{extra}]"
+
+        item = _item(
+            ep_name,
+            source.url,
+            source.datetime,
+            magnet.url,
+            magnet.hash,
+            source.tvdb_id,
+        )
+        items.append(item)
+
+    return items
+
+
 def _get_items(q, tvdb_id, season, episode):
     if (sonarr := get_sonarr()) is None:
         logger.warning(
@@ -145,73 +211,10 @@ def _get_items(q, tvdb_id, season, episode):
         return [_stub()]
 
     sources = _query(q, tvdb_id, season)
+    missing = not tvdb_id
     items = []
-
     for source in sources:
-        series = sonarr.get_series(source.tvdb_id)
-        if series is None:
-            continue
-
-        season_number = source.season if season is None else int(season)
-        schedule_correction = timedelta(days=source.schedule_correction)
-        now = (
-            datetime.now(timezone.utc).replace(tzinfo=None)
-            + schedule_correction
-        )
-        missing = not bool(tvdb_id)
-        episodes = series.get_episodes(season_number, now, missing)
-        if not episodes:
-            continue
-
-        magnet, err = get_magnet(
-            source.url, source.cookies, source.user_agent, series.title
-        )
-        source.update_error(err)
-
-        if magnet and magnet.url is None:
-            logger.error(
-                "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.url
-            )
-            continue
-        if err:
-            logger.error("[tvdbid:%i]: error: %s", source.tvdb_id, err)
-            continue
-
-        source.update_magnet(magnet)
-        if source.datetime + schedule_correction < max(
-            ep.air_date_utc for ep in episodes
-        ):
-            continue
-
-        episode_number = int(episode) if episode else None
-        for ep in episodes:
-            if not (
-                episode_number is None or ep.episode_number == episode_number
-            ):
-                continue
-
-            ep_repr = f"S{ep.season_number:02}E{ep.episode_number:02}"
-            ep_name = f"{series.title} {ep_repr}"
-            if ep.has_file:
-                logger.info(
-                    "[tvdbid:%i]: episode exists: %s", source.tvdb_id, ep_name
-                )
-            else:
-                logger.info(
-                    "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
-                )
-
-            if extra := source.extra:
-                ep_name += f" [{extra}]"
-            item = _item(
-                ep_name,
-                source.url,
-                source.datetime,
-                magnet.url,
-                magnet.hash,
-                tvdb_id,
-            )
-            items.append(item)
+        items.extend(_source_items(sonarr, source, season, episode, missing))
 
     if not (q or tvdb_id or items):
         logger.info(
