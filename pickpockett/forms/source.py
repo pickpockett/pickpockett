@@ -36,6 +36,7 @@ class SourceForm(FlaskForm):
     schedule_correction = IntegerField(
         "Schedule correction (days)",
         [validators.number_range(min=0)],
+        default=0,
         description="Time delta between release date and air date",
         widget=NumberInput(step=7),
     )
