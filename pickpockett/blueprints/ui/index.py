@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import List
 
-from flask import Blueprint, redirect, render_template, url_for
+from flask import Blueprint, g, redirect, render_template, url_for
 
 from ...models import Source
-from ...sonarr import Series, get_sonarr
+from ...sonarr import Series
 
 bp = Blueprint("index", __name__)
 
@@ -38,7 +38,7 @@ class SeriesSource:
 
 @bp.route("/")
 def index():
-    if (sonarr := get_sonarr()) is None:
+    if not (sonarr := g.sonarr):
         return redirect(url_for("ui.settings.settings"))
 
     series_sources: List[SeriesSource] = []

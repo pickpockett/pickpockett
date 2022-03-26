@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, g, redirect, render_template, request, url_for
 
 from ...forms.source import SourceForm
 from ...magnet import get_magnet
 from ...models import Source
-from ...sonarr import get_sonarr
 
 bp = Blueprint("edit", __name__, url_prefix="/edit")
 
 
 @bp.route("/<int:source_id>", methods=["GET", "POST"])
 def edit(source_id):
-    if (sonarr := get_sonarr()) is None:
+    if not (sonarr := g.sonarr):
         return redirect(url_for("ui.settings.settings"))
 
     source = Source.get(source_id)

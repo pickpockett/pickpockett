@@ -15,40 +15,37 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 
-def init_app():
-    from .blueprints import api, ui
+class App(Flask):
+    def __init__(self):
+        from .blueprints import api, ui
 
-    app = Flask(__name__)
-    app.register_blueprint(api.bp)
-    app.register_blueprint(ui.bp)
+        super().__init__(__name__)
 
-    app.jinja_env.trim_blocks = True
-    app.jinja_env.lstrip_blocks = True
+        self.register_blueprint(api.bp)
+        self.register_blueprint(ui.bp)
 
-    app.config["WTF_CSRF_ENABLED"] = False
+        self.jinja_env.trim_blocks = True
+        self.jinja_env.lstrip_blocks = True
 
-    app.config["BOOTSTRAP_SERVE_LOCAL"] = True
-    bootstrap.init_app(app)
+        self.config["WTF_CSRF_ENABLED"] = False
 
-    data_dir = Path(os.environ.get("DATA_DIR", os.getcwd()))
-    config.path = data_dir / "config.json"
+        self.config["BOOTSTRAP_SERVE_LOCAL"] = True
+        bootstrap.init_app(self)
 
-    db_uri = "sqlite:///" + str(data_dir / __name__) + ".db"
-    app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        data_dir = Path(os.environ.get("DATA_DIR", os.getcwd()))
+        config.path = data_dir / "config.json"
 
-    db.init_app(app)
-    migrate.init_app(app, db)
+        db_uri = "sqlite:///" + str(data_dir / __name__) + ".db"
+        self.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+        self.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    def db_upgrade(app):
-        with app.app_context():
-            upgrade()
+        db.init_app(self)
+        migrate.init_app(self, db)
 
-    upgrade_process = Process(target=db_upgrade, args=(app,))
-    upgrade_process.start()
-    upgrade_process.join()
+        def db_upgrade():
+            with self.app_context():
+                upgrade()
 
-    return app
-
-
-app = init_app()
+        upgrade_process = Process(target=db_upgrade)
+        upgrade_process.start()
+        upgrade_process.join()

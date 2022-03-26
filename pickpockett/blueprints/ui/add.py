@@ -1,9 +1,8 @@
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, g, redirect, render_template, request, url_for
 
 from ...forms.source import GuessForm, SourceForm
 from ...magnet import get_magnet
 from ...models import Source
-from ...sonarr import get_sonarr
 
 bp = Blueprint("add", __name__, url_prefix="/add")
 
@@ -12,7 +11,7 @@ bp = Blueprint("add", __name__, url_prefix="/add")
 def add():
     args = request.args.copy()
     tvdb_ids = list(map(int, args.poplist("tvdb_id")))
-    if (sonarr := get_sonarr()) is None:
+    if not (sonarr := g.sonarr):
         return redirect(url_for("ui.settings.settings"))
 
     series = sonarr.series()
@@ -23,7 +22,7 @@ def add():
 
 @bp.route("/<int:tvdb_id>", methods=["GET", "POST"])
 def add_source(tvdb_id):
-    if (sonarr := get_sonarr()) is None:
+    if not (sonarr := g.sonarr):
         return redirect(url_for("ui.settings.settings"))
 
     series = sonarr.get_series(tvdb_id)
@@ -59,7 +58,7 @@ def add_source(tvdb_id):
 
 @bp.route("/smart", methods=["GET", "POST"])
 def add_smart():
-    if (sonarr := get_sonarr()) is None:
+    if not (sonarr := g.sonarr):
         return redirect(url_for("ui.settings.settings"))
 
     form = GuessForm()

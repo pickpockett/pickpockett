@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, g, redirect, render_template, request, url_for
 
 from ... import config
 from ...forms.config import ConfigForm
@@ -8,7 +8,7 @@ bp = Blueprint("settings", __name__, url_prefix="/settings")
 
 @bp.route("/", methods=["GET", "POST"])
 def settings():
-    conf = config.load()
+    conf = g.config
     form = ConfigForm(obj=conf)
     if not (conf.general and conf.general.user_agent or conf.sonarr):
         form.general.form.user_agent.data = str(request.user_agent)

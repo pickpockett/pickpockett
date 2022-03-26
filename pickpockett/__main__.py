@@ -5,9 +5,9 @@ import waitress
 from paste.translogger import TransLogger
 from werkzeug.serving import get_interface_ip
 
-from . import app
+from . import App
 
 logging.basicConfig(level=logging.INFO)
 
 hostname = get_interface_ip(socket.AF_INET)
-waitress.serve(TransLogger(app), host=hostname, port=9119)
+waitress.serve(TransLogger(App()), host=hostname, port=9119)

@@ -2,11 +2,11 @@ import logging
 from datetime import datetime, timedelta, timezone
 from xml.etree import ElementTree as et
 
+from flask import g
 from flask_sqlalchemy import BaseQuery
 
 from .magnet import get_magnet
 from .models import ALL_SEASONS, Source
-from .sonarr import get_sonarr
 
 CAPS = "caps"
 REGISTER = "register"
@@ -203,7 +203,7 @@ def _source_items(sonarr, source, season, episode, missing):
 
 
 def _get_items(q, tvdb_id, season, episode):
-    if (sonarr := get_sonarr()) is None:
+    if not (sonarr := g.sonarr):
         logger.warning(
             "PickPockett is not configured yet,"
             " so returning a stub to pass the Sonarr test"

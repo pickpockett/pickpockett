@@ -11,7 +11,6 @@ import requests
 from cachetools import TTLCache
 from pydantic import BaseModel, parse_obj_as, validator
 
-from . import config
 from .models import ALL_SEASONS
 
 logger = logging.getLogger(__name__)
@@ -270,8 +269,3 @@ class Sonarr:
 
 
 Series.update_forward_refs()
-
-
-def get_sonarr():
-    if conf_sonarr := config.load().sonarr:
-        return Sonarr(conf_sonarr)

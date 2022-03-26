@@ -4,9 +4,7 @@ from http import HTTPStatus
 
 import requests
 from bs4 import BeautifulSoup
-
-from . import config
-from .flaresolverr import FlareSolverr
+from flask import g
 
 logger = logging.getLogger(__name__)
 
@@ -57,27 +55,23 @@ HEADERS = {
 
 
 def _get_page(url, cookies, user_agent):
-    cookies = _prepare_cookies(cookies)
-    conf = config.load()
+    conf = g.config
+    if not user_agent and conf.general and conf.general.user_agent:
+        user_agent = conf.general.user_agent
+
     headers = {
         **HEADERS,
         "Referer": url,
     }
-    if not user_agent and conf.general and conf.general.user_agent:
-        user_agent = conf.general.user_agent
     if user_agent:
         headers["User-Agent"] = user_agent
 
+    cookies = _prepare_cookies(cookies)
     response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
     cookies.update(response.cookies.get_dict())
-    if (
-        response.status_code >= HTTPStatus.BAD_REQUEST
-        and conf.flaresolverr
-        and conf.flaresolverr.url
-    ):
-        flaresolverr = FlareSolverr(conf.flaresolverr)
+    if response.status_code >= HTTPStatus.BAD_REQUEST and g.flaresolverr:
         try:
-            solution = flaresolverr.solve(url, cookies).solution
+            solution = g.flaresolverr.solve(url, cookies).solution
         except Exception as e:
             logger.error(e)
         else:
