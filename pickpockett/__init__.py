@@ -7,6 +7,7 @@ from flask_bootstrap import Bootstrap5
 from flask_migrate import Migrate, upgrade
 from flask_sqlalchemy import SQLAlchemy
 
+from . import filters
 from .configuration import Config, ConfigManager
 
 bootstrap = Bootstrap5()
@@ -26,6 +27,7 @@ class App(Flask):
 
         self.jinja_env.trim_blocks = True
         self.jinja_env.lstrip_blocks = True
+        filters.register(self)
 
         self.config["WTF_CSRF_ENABLED"] = False
 

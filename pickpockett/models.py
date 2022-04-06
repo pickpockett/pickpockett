@@ -1,11 +1,8 @@
 from __future__ import annotations
 
 import logging
-import re
 from datetime import datetime
 
-from humanize import naturaltime
-from markupsafe import Markup
 from sqlalchemy import Column, DateTime, Integer, String, Text
 
 from . import db
@@ -78,14 +75,3 @@ class Source(db.Model):
     def update_error(self, err):
         self.error = err or ""
         db.session.commit()
-
-    @property
-    def updated(self):
-        if self.datetime is None:
-            return ""
-
-        msg = naturaltime(self.datetime, when=datetime.utcnow())
-        if re.search("(moment|second|minute|hour)", msg):
-            msg = f"<b>{msg}</b>"
-
-        return Markup(msg)

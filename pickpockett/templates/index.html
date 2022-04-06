@@ -40,7 +40,7 @@
         <td>{{ ss.season }}</td>
         <td>{{ ss.source.quality }}</td>
         <td>{{ ss.source.language }}</td>
-        <td>{{ ss.source.updated }}</td>
+        <td>{{ ss.source.datetime | naturalize }}</td>
         <td>
             {% if ss.completed %}
             <form action="{{ url_for('ui.edit.delete', source_id=ss.source.id) }}" method="post">
