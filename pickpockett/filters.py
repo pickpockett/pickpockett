@@ -11,7 +11,7 @@ def naturalize(value):
 
     now = datetime.utcnow()
     msg = naturaltime(value, when=now)
-    if (now - value).total_seconds() < 86400:
+    if (now - value).total_seconds() < 172800:
         msg = f"<b>{msg}</b>"
 
     return Markup(msg)
