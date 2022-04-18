@@ -2,7 +2,7 @@ from typing import List
 
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, SelectField, SubmitField, validators
-from wtforms.widgets import NumberInput, TextArea
+from wtforms.widgets import TextArea
 
 from ..models import ALL_SEASONS, DEFAULT_QUALITY
 from ..sonarr import Season
@@ -38,7 +38,6 @@ class SourceForm(FlaskForm):
         [validators.number_range(min=0)],
         default=0,
         description="Time delta between release date and air date",
-        widget=NumberInput(step=7),
     )
     cookies = TextAreaField(
         "Cookies",
