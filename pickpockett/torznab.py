@@ -146,7 +146,7 @@ def _source_items(sonarr, source, season, episode, missing):
     schedule_correction = timedelta(days=source.schedule_correction)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + schedule_correction
     episodes = series.get_episodes(season_number, now, missing)
-    if not episodes:
+    if not (episodes or source.error):
         return []
 
     magnet, err = get_magnet(
@@ -164,6 +164,10 @@ def _source_items(sonarr, source, season, episode, missing):
         return []
 
     source.update_magnet(magnet)
+
+    if not episodes:
+        return []
+
     recent_air_date = max(ep.air_date_utc for ep in episodes)
     if source.datetime + schedule_correction < recent_air_date:
         return []
