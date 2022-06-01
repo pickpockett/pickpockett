@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import List
 
+import requests.exceptions
 from flask import Blueprint, g, redirect, render_template, url_for
 
 from ...models import Source
@@ -48,6 +49,8 @@ def index():
             s = sonarr.get_series(source.tvdb_id)
         except KeyError:
             source.delete()
+        except requests.exceptions.RequestException:
+            return redirect(url_for("ui.settings.settings"))
         else:
             bisect.insort(series_sources, SeriesSource(s, source))
 
