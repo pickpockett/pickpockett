@@ -1,3 +1,5 @@
+[![Docker Pulls](https://img.shields.io/docker/pulls/pickpockett/pickpockett)](https://hub.docker.com/r/pickpockett/pickpockett)
+
 # PickPockett
 
 PickPockett watches a series page on a torrent tracker for magnet link updates.
