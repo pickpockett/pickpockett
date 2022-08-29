@@ -31,6 +31,7 @@ class Source(db.Model):
     quality = Column(Text, nullable=False, default=DEFAULT_QUALITY)
     language = Column(Text, nullable=False, server_default="")
     error = Column(Text, nullable=False, server_default="")
+    version = Column(Integer, nullable=False, server_default="0")
 
     @classmethod
     def get(cls, ident) -> Source:
@@ -70,6 +71,7 @@ class Source(db.Model):
             )
             self.hash = magnet.hash
             self.datetime = datetime.utcnow()
+            self.version += 1
         db.session.commit()
 
     def update_error(self, err):

@@ -190,6 +190,8 @@ def _source_items(sonarr, source, season, episode, missing):
                 "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
             )
 
+        ep_name += f" [v{source.version}]"
+
         if extra := source.extra:
             ep_name += f" [{extra}]"
 
