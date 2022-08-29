@@ -51,3 +51,6 @@ class App(Flask):
         upgrade_process = Process(target=db_upgrade)
         upgrade_process.start()
         upgrade_process.join()
+
+
+app = App()
