@@ -1,3 +1,4 @@
+import logging
 import os
 from multiprocessing import Process
 from pathlib import Path
@@ -18,6 +19,8 @@ migrate = Migrate()
 
 class App(Flask):
     def __init__(self):
+        logging.basicConfig(level=logging.INFO)
+
         from .blueprints import api, ui
 
         super().__init__(__name__)
