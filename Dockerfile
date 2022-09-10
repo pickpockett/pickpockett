@@ -14,5 +14,4 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY migrations migrations
 COPY pickpockett pickpockett
-COPY gunicorn.conf.py .
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "pickpockett:app"]
+CMD [ "python3", "-m" , "pickpockett"]
