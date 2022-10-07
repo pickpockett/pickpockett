@@ -1,6 +1,5 @@
 import json
 import logging
-from http import HTTPStatus
 
 import requests
 from bs4 import BeautifulSoup
@@ -69,7 +68,7 @@ def _get_page(url, cookies, user_agent):
     cookies = _prepare_cookies(cookies)
     response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
     cookies.update(response.cookies.get_dict())
-    if response.status_code >= HTTPStatus.BAD_REQUEST and g.flaresolverr:
+    if 400 <= response.status_code < 500 and g.flaresolverr:
         try:
             solution = g.flaresolverr.solve(url, cookies).solution
         except Exception as e:
