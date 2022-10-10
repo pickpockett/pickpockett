@@ -4,6 +4,12 @@ on:
   push:
     branches: 
       - master
+    paths:
+      - "migrations/**"
+      - "pickpockett/**"
+      - ".dockerignore"
+      - "Dockerfile"
+      - "requirements.txt"
 
 jobs:
   docker:
