@@ -1,6 +1,8 @@
+import hashlib
 import json
 import logging
 
+import bencode
 import requests
 from bs4 import BeautifulSoup
 from flask import g
@@ -53,7 +55,7 @@ HEADERS = {
 }
 
 
-def _get_page(url, cookies, user_agent):
+def _prep_headers_and_cookies(url, cookies, user_agent):
     conf = g.config
     if not user_agent and conf.general and conf.general.user_agent:
         user_agent = conf.general.user_agent
@@ -66,6 +68,11 @@ def _get_page(url, cookies, user_agent):
         headers["User-Agent"] = user_agent
 
     cookies = _prepare_cookies(cookies)
+    return headers, cookies
+
+
+def _get_page(url, cookies, user_agent):
+    headers, cookies = _prep_headers_and_cookies(url, cookies, user_agent)
     response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
     cookies.update(response.cookies.get_dict())
     if 400 <= response.status_code < 500 and g.flaresolverr:
@@ -107,3 +114,13 @@ def parse(url, cookies, user_agent):
 
     bs = BeautifulSoup(text, "html.parser")
     return bs, cookies, user_agent
+
+
+def magnet_hash_from_torrent(url, cookies, user_agent):
+    headers, cookies = _prep_headers_and_cookies(url, cookies, user_agent)
+    response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
+    if response.headers.get("content-type") == "application/x-bittorrent":
+        meta = bencode.bdecode(response.content)
+        info = meta["info"]
+        sha = hashlib.sha1(bencode.bencode(info))
+        return sha.hexdigest()

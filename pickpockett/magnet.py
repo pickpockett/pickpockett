@@ -2,9 +2,9 @@ import json
 import logging
 import re
 from typing import Dict, List, Optional, cast
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
-from .page import ParseError, parse
+from .page import ParseError, magnet_hash_from_torrent, parse
 
 logger = logging.getLogger(__name__)
 
@@ -25,24 +25,47 @@ class Magnet:
         return self._hash
 
 
+def _make_query(params):
+    return urlencode(params, doseq=True, safe=":/")
+
+
 def _find_magnet_link(
     url, cookies, user_agent, display_name
 ) -> Optional[Magnet]:
     page, page_cookies, user_agent = parse(url, cookies, user_agent)
+    if (cookies or user_agent) and page_cookies:
+        cookies = json.dumps(page_cookies)
+
     if tag := page.find("a", href=re.compile("^magnet:")):
         magnet_link = tag["href"]
         if display_name:
             parsed = urlparse(magnet_link)
             params = cast(Dict[str, List[str]], parse_qs(parsed.query))
             params["dn"] = [display_name]
-            query = urlencode(params, doseq=True, safe=":/")
+            query = _make_query(params)
             parsed = parsed._replace(query=query)
             magnet_link = parsed.geturl()
 
-        if (cookies or user_agent) and page_cookies:
-            cookies = json.dumps(page_cookies)
-
         return Magnet(magnet_link, page, cookies, user_agent)
+
+    elif download_url := page.find(
+        "a", href=re.compile(r"^(?!#).*(download|dl\.php)")
+    ):
+        download_url = urljoin(url, download_url["href"])
+        try:
+            magnet_hash = magnet_hash_from_torrent(
+                download_url, page_cookies, user_agent
+            )
+        except Exception as e:
+            logger.error(e)
+        else:
+            if magnet_hash:
+                params = {"xt": [f"urn:btih:{magnet_hash}"]}
+                if display_name:
+                    params["dn"] = [display_name]
+                query = _make_query(params)
+                magnet_link = urlunparse(["magnet", "", "", "", query, ""])
+                return Magnet(magnet_link, page, cookies, user_agent)
 
     return Magnet(None)
 
