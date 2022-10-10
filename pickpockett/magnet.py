@@ -1,10 +1,13 @@
+import hashlib
 import json
 import logging
 import re
 from typing import Dict, List, Optional, cast
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
-from .page import ParseError, magnet_hash_from_torrent, parse
+import bencode
+
+from .page import ParseError, get_torrent, parse
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +56,15 @@ def _find_magnet_link(
     ):
         download_url = urljoin(url, download_url["href"])
         try:
-            magnet_hash = magnet_hash_from_torrent(
-                download_url, page_cookies, user_agent
-            )
+            torrent = get_torrent(download_url, cookies, user_agent)
         except Exception as e:
             logger.error(e)
         else:
-            if magnet_hash:
+            if torrent:
+                meta = bencode.bdecode(torrent)
+                info = meta["info"]
+                sha = hashlib.sha1(bencode.bencode(info))
+                magnet_hash = sha.hexdigest()
                 params = {"xt": [f"urn:btih:{magnet_hash}"]}
                 if display_name:
                     params["dn"] = [display_name]
