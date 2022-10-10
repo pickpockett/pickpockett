@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from typing import Dict, List, Optional, cast
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -24,19 +25,11 @@ class Magnet:
         return self._hash
 
 
-def _magnet_link(tag):
-    return (
-        tag.name == "a"
-        and tag.has_attr("href")
-        and tag["href"].startswith("magnet")
-    )
-
-
 def _find_magnet_link(
     url, cookies, user_agent, display_name
 ) -> Optional[Magnet]:
     page, page_cookies, user_agent = parse(url, cookies, user_agent)
-    if tag := page.find(_magnet_link):
+    if tag := page.find("a", href=re.compile("^magnet:")):
         magnet_link = tag["href"]
         if display_name:
             parsed = urlparse(magnet_link)
