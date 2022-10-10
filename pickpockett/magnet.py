@@ -5,7 +5,7 @@ import re
 from typing import Dict, List, Optional, cast
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
-import bencode
+import pyben
 
 from .page import ParseError, get_torrent, parse
 
@@ -61,9 +61,9 @@ def _find_magnet_link(
             logger.error(e)
         else:
             if torrent:
-                meta = bencode.bdecode(torrent)
+                meta = pyben.loads(torrent)
                 info = meta["info"]
-                sha = hashlib.sha1(bencode.bencode(info))
+                sha = hashlib.sha1(pyben.dumps(info))
                 magnet_hash = sha.hexdigest()
                 params = {"xt": [f"urn:btih:{magnet_hash}"]}
                 if display_name:
