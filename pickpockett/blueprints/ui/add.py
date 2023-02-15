@@ -7,8 +7,8 @@ from ...models import Source
 bp = Blueprint("add", __name__, url_prefix="/add")
 
 
-@bp.route("/")
-def add():
+@bp.route("/manual")
+def add_manual():
     args = request.args.copy()
     tvdb_ids = list(map(int, args.poplist("tvdb_id")))
     if not (sonarr := g.sonarr):
@@ -56,7 +56,7 @@ def add_source(tvdb_id):
     return render_template("add_source.html", form=form, series=series)
 
 
-@bp.route("/smart", methods=["GET", "POST"])
+@bp.route("/", methods=["GET", "POST"])
 def add_smart():
     if not (sonarr := g.sonarr):
         return redirect(url_for("ui.settings.settings"))

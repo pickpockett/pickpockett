@@ -3,11 +3,11 @@
 
 {% block content %}
 <div class="text-center">
-    <h1>Add a source and guess the series</h1>
+    <h1>Add a source by guessing the series</h1>
     {{ render_form(form) }}
     <div>
         <a class="btn btn-secondary" href="{{ url_for('ui.index.index') }}">Cancel</a>
-        <label class="btn btn-info" for="{{ form.submit.id }}">Let's try!</label>
+        <label class="btn btn-info" for="{{ form.submit.id }}">Add</label>
     </div>
 </div>
 {% endblock %}
