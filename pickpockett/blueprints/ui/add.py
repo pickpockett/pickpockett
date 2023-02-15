@@ -17,7 +17,7 @@ def add_manual():
     series = sonarr.series()
     if tvdb_ids:
         series = [s for s in series if s.tvdb_id in tvdb_ids]
-    return render_template("add.html", series=series, args=args)
+    return render_template("add_manual.html", series=series, args=args)
 
 
 @bp.route("/<int:tvdb_id>", methods=["GET", "POST"])
@@ -102,4 +102,4 @@ def add_smart():
 
             return redirect(url_for("ui.add.add", **args))
 
-    return render_template("add_smart.html", form=form)
+    return render_template("add.html", form=form)
