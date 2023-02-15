@@ -29,6 +29,9 @@ def edit(source_id):
         if err:
             form.url.errors = [err]
         else:
+            if form.url.data != source.url:
+                source.hash = ""
+                source.datetime = None
             source.update(
                 url=form.url.data,
                 season=form.season.data,
