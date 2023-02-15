@@ -100,6 +100,6 @@ def add_smart():
                 else:
                     args["tvdb_id"] = [series.tvdb_id for series in lookup]
 
-            return redirect(url_for("ui.add.add", **args))
+            return redirect(url_for("ui.add.add_manual", **args))
 
     return render_template("add.html", form=form)
