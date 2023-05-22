@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Image(BaseModel):
-    cover_type: Literal["banner", "fanart", "poster"]
+    cover_type: Literal["banner", "fanart", "poster", "unknown"]
     url: str
 
     class Config:
