@@ -65,8 +65,7 @@ class Series(BaseModel):
         exist = [
             ep.has_file
             for ep in episode
-            if ep.season_number == season
-            or season == ALL_SEASONS
+            if season in (ALL_SEASONS, ep.season_number)
             and self.status == "ended"
             and ep.season_number > 0
         ]
@@ -78,8 +77,8 @@ class Series(BaseModel):
             ep
             for ep in episode
             if ep.monitored
-            and (not missing or not ep.has_file)
-            and (season == ALL_SEASONS or ep.season_number == season)
+            and not (missing and ep.has_file)
+            and season in (ALL_SEASONS, ep.season_number)
             and ep.air_date_utc is not None
             and ep.air_date_utc < dt
         ]
