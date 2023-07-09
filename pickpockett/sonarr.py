@@ -71,16 +71,14 @@ class Series(BaseModel):
         ]
         return exist and all(exist)
 
-    def get_episodes(self, season, dt, missing=False) -> List[Episode]:
+    def get_episodes(self, season, dt) -> List[Episode]:
         episode = self.sonarr.episode(self.id)
         season_episode_list = [
             ep
             for ep in episode
             if ep.monitored
-            and not (missing and ep.has_file)
             and season in (ALL_SEASONS, ep.season_number)
-            and ep.air_date_utc is not None
-            and ep.air_date_utc < dt
+            and (ep.air_date_utc or datetime.min) < dt
         ]
         return season_episode_list
 

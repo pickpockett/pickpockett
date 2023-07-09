@@ -5,7 +5,7 @@ from xml.etree import ElementTree as et
 from flask import g
 from flask_sqlalchemy import BaseQuery
 
-from .magnet import get_magnet
+from .magnet import Magnet
 from .models import ALL_SEASONS, Source
 
 CAPS = "caps"
@@ -136,7 +136,7 @@ def _query(q, tvdb_id, season):
     return query.all()
 
 
-def _source_items(sonarr, source, season, episode, missing):
+def _source_items(sonarr, source, season, episode):
     items = []
     series = sonarr.get_series(source.tvdb_id)
     if series is None:
@@ -144,33 +144,13 @@ def _source_items(sonarr, source, season, episode, missing):
 
     season_number = source.season if season is None else int(season)
     schedule_correction = timedelta(days=source.schedule_correction)
-    now = datetime.now(timezone.utc).replace(tzinfo=None) + schedule_correction
-    episodes = series.get_episodes(season_number, now, missing)
-    if not (episodes or source.error):
-        return []
-
-    magnet, err = get_magnet(
-        source.url, source.cookies, source.user_agent, series.title
-    )
-    source.update_error(err)
-
-    if magnet and magnet.url is None:
-        logger.error(
-            "[tvdbid:%i]: no magnet found: %r", source.tvdb_id, source.url
-        )
-        return []
-    if err:
-        logger.error("[tvdbid:%i]: error: %s", source.tvdb_id, err)
-        return []
-
-    source.update_magnet(magnet)
+    dt = source.datetime + schedule_correction
+    episodes = series.get_episodes(season_number, dt)
 
     if not episodes:
         return []
 
-    recent_air_date = max(ep.air_date_utc for ep in episodes)
-    if source.datetime + schedule_correction < recent_air_date:
-        return []
+    magnet = Magnet.from_hash(source.hash, dn=series.title)
 
     episode_number = int(episode) if episode else None
     for ep in episodes:
@@ -218,10 +198,9 @@ def _get_items(q, tvdb_id, season, episode):
         return [_stub()]
 
     sources = _query(q, tvdb_id, season)
-    missing = not tvdb_id
     items = []
     for source in sources:
-        items.extend(_source_items(sonarr, source, season, episode, missing))
+        items.extend(_source_items(sonarr, source, season, episode))
 
     if not (q or tvdb_id or items):
         logger.info(

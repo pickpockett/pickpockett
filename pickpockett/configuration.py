@@ -5,6 +5,7 @@ from pydantic import AnyHttpUrl, BaseModel
 
 
 class GeneralConfig(BaseModel):
+    check_interval: int = 15
     user_agent: str
 
 
@@ -46,5 +47,9 @@ class ConfigManager:
         return self.config
 
     def save(self, obj):
+        from .scheduler import reschedule
+
         self.config = Config.parse_obj(obj)
         self.path.write_text(self.config.json())
+
+        reschedule(self.config)

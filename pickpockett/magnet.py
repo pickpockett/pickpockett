@@ -27,6 +27,15 @@ class Magnet:
 
         return self._hash
 
+    @classmethod
+    def from_hash(cls, hsh, **kwargs):
+        params = {"xt": [f"urn:btih:{hsh}"]}
+        for key, value in kwargs.items():
+            params[key] = [value]
+        query = _make_query(params)
+        url = urlunparse(["magnet", "", "", "", query, ""])
+        return cls(url)
+
 
 def _make_query(params):
     return urlencode(params, doseq=True, safe=":/")
@@ -87,7 +96,7 @@ def get_magnet(url, cookies, user_agent, display_name=None):
     try:
         magnet = _find_magnet_link(url, cookies, user_agent, display_name)
     except ParseError as e:
-        return None, str(e)
+        return None, repr(e)
 
     error = "No magnet link found" if magnet.url is None else None
 

@@ -21,6 +21,7 @@ class App(Flask):
     def __init__(self):
         logging.basicConfig(level=logging.INFO)
 
+        from . import scheduler
         from .blueprints import api, ui
 
         super().__init__(__name__)
@@ -54,6 +55,9 @@ class App(Flask):
         upgrade_process = Process(target=db_upgrade)
         upgrade_process.start()
         upgrade_process.join()
+
+        scheduler.init_app(self)
+        scheduler.reschedule(config.load())
 
 
 app = App()

@@ -7,8 +7,11 @@ from .widgets import UserAgentInput
 
 
 class GeneralConfigForm(FlaskForm):
+    check_interval = IntegerField(
+        "Check interval (min)", [validators.number_range(min=1)]
+    )
     user_agent = StringField(
-        "User Agent", required=True, widget=UserAgentInput()
+        "Default User Agent", required=True, widget=UserAgentInput()
     )
 
 
