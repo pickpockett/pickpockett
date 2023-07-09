@@ -155,7 +155,7 @@ def _item_name(title, content, version, extra):
 
 
 def _source_items(sonarr, source, season, episode):
-    if source.datetime is None and not update_magnet(source):
+    if not (source.datetime or update_magnet(source)):
         return []
 
     items = []
