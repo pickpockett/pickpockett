@@ -1,5 +1,7 @@
 import logging
 from datetime import datetime, timedelta, timezone
+from itertools import groupby
+from typing import Optional
 from xml.etree import ElementTree as et
 
 from flask import g
@@ -136,13 +138,29 @@ def _query(q, tvdb_id, season):
     return query.all()
 
 
+def _to_optional_int(value, *, default=None) -> Optional[int]:
+    return default if value is None else int(value)
+
+
+def _item_name(title, content, version, extra):
+    name = f"{title} {content}"
+
+    if version > 1:
+        name += f" [v{version}]"
+
+    if extra:
+        name += f" [{extra}]"
+
+    return name
+
+
 def _source_items(sonarr, source, season, episode):
     items = []
     series = sonarr.get_series(source.tvdb_id)
     if series is None:
         return []
 
-    season_number = source.season if season is None else int(season)
+    season_number = _to_optional_int(season, default=source.season)
     schedule_correction = timedelta(days=source.schedule_correction)
     dt = source.datetime + schedule_correction
     episodes = series.get_episodes(season_number, dt)
@@ -150,34 +168,18 @@ def _source_items(sonarr, source, season, episode):
     if not episodes:
         return []
 
-    magnet = Magnet.from_hash(source.hash, dn=series.title)
+    episode_map = {
+        s: [e.episode_number for e in eps]
+        for s, eps in groupby(episodes, lambda x: x.season_number)
+    }
 
-    episode_number = int(episode) if episode else None
-    for ep in episodes:
-        if episode_number is not None and ep.episode_number != episode_number:
-            continue
-
-        ep_name = (
-            f"{series.title} S{ep.season_number:02}E{ep.episode_number:02}"
+    for season_num, episode_nums in episode_map.items():
+        season_name = _item_name(
+            series.title, f"S{season_num:02}", source.version, source.extra
         )
-
-        if ep.has_file:
-            logger.info(
-                "[tvdbid:%i]: episode exists: %s", source.tvdb_id, ep_name
-            )
-        else:
-            logger.info(
-                "[tvdbid:%i]: missing episode: %s", source.tvdb_id, ep_name
-            )
-
-        if source.version > 1:
-            ep_name += f" [v{source.version}]"
-
-        if extra := source.extra:
-            ep_name += f" [{extra}]"
-
+        magnet = Magnet.from_hash(source.hash, dn=season_name)
         item = _item(
-            ep_name,
+            season_name,
             source.url,
             source.datetime,
             magnet.url,
@@ -185,6 +187,27 @@ def _source_items(sonarr, source, season, episode):
             source.tvdb_id,
         )
         items.append(item)
+
+        first, last = min(episode_nums), max(episode_nums)
+        episode_number = _to_optional_int(episode, default=first)
+        if first <= episode_number <= last:
+            episodes_name = _item_name(
+                series.title,
+                f"S{season_num:02}"
+                + "-".join(f"E{ep:02}" for ep in sorted({first, last})),
+                source.version,
+                source.extra,
+            )
+            magnet = Magnet.from_hash(source.hash, dn=episodes_name)
+            item = _item(
+                episodes_name,
+                source.url,
+                source.datetime,
+                magnet.url,
+                magnet.hash,
+                source.tvdb_id,
+            )
+            items.append(item)
 
     return items
 
