@@ -41,24 +41,13 @@ def _make_query(params):
     return urlencode(params, doseq=True, safe=":/")
 
 
-def _find_magnet_link(
-    url, cookies, user_agent, display_name
-) -> Optional[Magnet]:
+def _find_magnet_link(url, cookies, user_agent) -> Optional[Magnet]:
     page, page_cookies, user_agent = parse(url, cookies, user_agent)
     if (cookies or user_agent) and page_cookies:
         cookies = json.dumps(page_cookies)
 
     if tag := page.find("a", href=re.compile("^magnet:")):
-        magnet_link = tag["href"]
-        if display_name:
-            parsed = urlparse(magnet_link)
-            params = cast(Dict[str, List[str]], parse_qs(parsed.query))
-            params["dn"] = [display_name]
-            query = _make_query(params)
-            parsed = parsed._replace(query=query)
-            magnet_link = parsed.geturl()
-
-        return Magnet(magnet_link, page, cookies, user_agent)
+        return Magnet(tag["href"], page, cookies, user_agent)
 
     elif download_url := page.find(
         "a", href=re.compile(r"^(?!#).*(download|dl\.php)")
@@ -75,8 +64,6 @@ def _find_magnet_link(
                 sha = hashlib.sha1(pyben.dumps(info))
                 magnet_hash = sha.hexdigest()
                 params = {"xt": [f"urn:btih:{magnet_hash}"]}
-                if display_name:
-                    params["dn"] = [display_name]
                 query = _make_query(params)
                 magnet_link = urlunparse(["magnet", "", "", "", query, ""])
                 return Magnet(magnet_link, page, cookies, user_agent)
@@ -92,9 +79,9 @@ def _hash_from_magnet(magnet_url):
     return infohash
 
 
-def get_magnet(url, cookies, user_agent, display_name=None):
+def get_magnet(url, cookies, user_agent):
     try:
-        magnet = _find_magnet_link(url, cookies, user_agent, display_name)
+        magnet = _find_magnet_link(url, cookies, user_agent)
     except ParseError as e:
         return None, repr(e)
 
