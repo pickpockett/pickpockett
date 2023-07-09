@@ -6,7 +6,7 @@ from pydantic import AnyHttpUrl, BaseModel
 
 class GeneralConfig(BaseModel):
     check_interval: int = 15
-    user_agent: str
+    user_agent: str = ""
 
 
 class OptionalHttpUrl(AnyHttpUrl):
@@ -28,7 +28,7 @@ class SonarrConfig(BaseModel):
 
 
 class Config(BaseModel):
-    general: Optional[GeneralConfig]
+    general: GeneralConfig
     sonarr: Optional[SonarrConfig]
     flaresolverr: Optional[FlareSolverrConfig]
 
@@ -43,7 +43,7 @@ class ConfigManager:
             if self.path.exists():
                 self.config = Config.parse_file(self.path)
             else:
-                self.config = Config()
+                self.config = Config(general=GeneralConfig())
         return self.config
 
     def save(self, obj):

@@ -55,7 +55,7 @@ HEADERS = {
 
 def _prep_headers_and_cookies(url, cookies, user_agent):
     conf = g.config
-    if not user_agent and conf.general and conf.general.user_agent:
+    if not user_agent and conf.general.user_agent:
         user_agent = conf.general.user_agent
 
     headers = {
