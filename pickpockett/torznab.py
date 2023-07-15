@@ -1,5 +1,4 @@
 import logging
-from concurrent import futures as concurrent
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from typing import Optional
@@ -226,13 +225,8 @@ def _get_items(q, tvdb_id, season, episode):
 
     sources = _query(q, tvdb_id, season)
     items = []
-    with concurrent.ThreadPoolExecutor() as executor:
-        futures = [
-            executor.submit(_source_items, sonarr, source, season, episode)
-            for source in sources
-        ]
-        for future in concurrent.as_completed(futures):
-            items.extend(future.result())
+    for source in sources:
+        items.extend(_source_items(sonarr, source, season, episode))
 
     if not (q or tvdb_id or items):
         logger.info(
