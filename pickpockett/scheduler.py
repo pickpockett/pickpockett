@@ -5,7 +5,7 @@ from flask import Flask, g
 from flask_apscheduler import APScheduler
 
 from . import Config, config
-from .magnet import update_magnet
+from .magnet import get_magnet
 from .models import Source
 from .sonarr import Sonarr
 
@@ -40,7 +40,23 @@ def check():
                 if last_aired < source.datetime:
                     continue
 
-            update_magnet(source)
+            magnet, err = get_magnet(
+                source.url, source.cookies, source.user_agent
+            )
+            source.update_error(err)
+
+            if magnet and magnet.url is None:
+                logger.error(
+                    "[tvdbid:%i]: no magnet link found: %r",
+                    source.tvdb_id,
+                    source.url,
+                )
+                continue
+            if err:
+                logger.error("[tvdbid:%i]: error: %s", source.tvdb_id, err)
+                continue
+
+            source.update_magnet(magnet)
 
 
 def reschedule(conf: Config):

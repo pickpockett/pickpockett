@@ -7,7 +7,6 @@ from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import pyben
 
-from .models import Source
 from .page import ParseError, get_torrent, parse
 
 logger = logging.getLogger(__name__)
@@ -89,22 +88,3 @@ def get_magnet(url, cookies, user_agent):
     error = "No magnet link found" if magnet.url is None else None
 
     return magnet, error
-
-
-def update_magnet(source: Source):
-    magnet, err = get_magnet(source.url, source.cookies, source.user_agent)
-    source.update_error(err)
-
-    if magnet and magnet.url is None:
-        logger.error(
-            "[tvdbid:%i]: no magnet link found: %r", source.tvdb_id, source.url
-        )
-        return False
-
-    if err:
-        logger.error("[tvdbid:%i]: error: %s", source.tvdb_id, err)
-        return False
-
-    source.update_magnet(magnet)
-
-    return True
