@@ -11,6 +11,10 @@ from .widgets import UserAgentInput
 
 
 class SourceForm(FlaskForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cookies.data = self.cookies.data or ""
+
     url = URLField(
         "URL",
         required=True,

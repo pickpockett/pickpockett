@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import JSON, Column, DateTime, Integer, String, Text, update
 
 from . import db
 from .magnet import Magnet
@@ -24,7 +24,7 @@ class Source(db.Model):
     )
     url = Column(Text, nullable=False)
     schedule_correction = Column(Integer, nullable=False, server_default="0")
-    cookies = Column(Text, nullable=False, server_default="")
+    cookies = Column(JSON, nullable=False, server_default="{}")
     user_agent = Column(Text, nullable=False, server_default="")
     hash = Column(String(40), nullable=False, server_default="")
     datetime = Column(DateTime)
@@ -49,6 +49,7 @@ class Source(db.Model):
         db.session.commit()
 
     def update(self, **kwargs):
+        self.update_cookies(self.cookies, kwargs.pop("cookies"))
         for key, value in kwargs.items():
             setattr(self, key, value)
         db.session.commit()
@@ -57,9 +58,15 @@ class Source(db.Model):
     def extra(self):
         return ", ".join(e for e in (self.language, self.quality) if e)
 
+    @classmethod
+    def update_cookies(cls, old, new):
+        if old and new:
+            db.session.execute(
+                update(cls).where(cls.cookies == old).values(cookies=new)
+            )
+
     def update_magnet(self, magnet: Magnet):
-        if magnet.cookies:
-            self.cookies = magnet.cookies
+        self.update_cookies(self.cookies, magnet.cookies)
         if magnet.user_agent:
             self.user_agent = magnet.user_agent
         if self.hash != magnet.hash:

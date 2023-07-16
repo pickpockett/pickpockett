@@ -1,5 +1,4 @@
 import hashlib
-import json
 import logging
 import re
 from typing import Dict, List, Optional, cast
@@ -13,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 class Magnet:
-    def __init__(self, url, page=None, cookies="", user_agent=""):
+    def __init__(self, url, page=None, cookies=None, user_agent=""):
         self.url = url
         self.page = page
-        self.cookies = cookies
+        self.cookies = cookies or {}
         self.user_agent = user_agent
         self._hash = None
 
@@ -44,7 +43,7 @@ def _make_query(params):
 def _find_magnet_link(url, cookies, user_agent) -> Optional[Magnet]:
     page, page_cookies, user_agent = parse(url, cookies, user_agent)
     if (cookies or user_agent) and page_cookies:
-        cookies = json.dumps(page_cookies)
+        cookies = page_cookies
 
     if tag := page.find("a", href=re.compile("^magnet:")):
         return Magnet(tag["href"], page, cookies, user_agent)
