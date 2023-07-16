@@ -66,7 +66,7 @@ def reschedule(conf: Config):
         check,
         trigger="interval",
         minutes=conf.general.check_interval,
-    )
+    ).modify(next_run_time=datetime.now())
 
 
 def init_app(app: Flask):
