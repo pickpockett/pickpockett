@@ -7,7 +7,7 @@ from xml.etree import ElementTree as et
 from flask import g
 from flask_sqlalchemy import BaseQuery
 
-from .magnet import Magnet
+from .magnet import Magnet, update_magnet
 from .models import ALL_SEASONS, Source
 
 CAPS = "caps"
@@ -155,7 +155,7 @@ def _item_name(title, content, version, extra):
 
 
 def _source_items(sonarr, source, season, episode):
-    if not source.datetime:
+    if not (source.datetime or update_magnet(source)):
         return []
 
     items = []
