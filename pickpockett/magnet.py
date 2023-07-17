@@ -1,13 +1,15 @@
 import hashlib
 import logging
 import re
-from typing import Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Dict, List, Optional, cast
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import pyben
 
-from .models import Source
 from .page import ParseError, get_torrent, parse
+
+if TYPE_CHECKING:
+    from .models import Source
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,7 @@ def get_magnet(url, cookies, user_agent):
     return magnet, error
 
 
-def update_magnet(source: Source):
+def update_magnet(source: "Source"):
     magnet, err = get_magnet(source.url, source.cookies, source.user_agent)
     source.update_error(err)
 
