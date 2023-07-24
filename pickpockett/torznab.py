@@ -158,7 +158,6 @@ def _source_items(sonarr, source, season, episode):
     if not (source.datetime or update_magnet(source)):
         return []
 
-    items = []
     series = sonarr.get_series(source.tvdb_id)
     if series is None:
         return []
@@ -176,6 +175,7 @@ def _source_items(sonarr, source, season, episode):
         for s, eps in groupby(episodes, lambda x: x.season_number)
     }
 
+    items = []
     for season_num, episode_nums in episode_map.items():
         season_name = _item_name(
             series.title, f"S{season_num:02}", source.version, source.extra
