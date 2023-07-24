@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 from flask_wtf import FlaskForm
@@ -13,7 +14,10 @@ from .widgets import UserAgentInput
 class SourceForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cookies.data = self.cookies.data or ""
+        if isinstance(self.cookies.data, (dict, list)):
+            self.cookies.data = (
+                json.dumps(self.cookies.data) if self.cookies.data else ""
+            )
 
     url = URLField(
         "URL",
