@@ -24,7 +24,7 @@ def check():
         sonarr = Sonarr(g.config.sonarr)
 
         for source in Source.query:
-            if not source.error and source.datetime:
+            if not source.error and source.datetime and not source.cookies:
                 series = sonarr.get_series(source.tvdb_id)
                 if series is None:
                     continue
