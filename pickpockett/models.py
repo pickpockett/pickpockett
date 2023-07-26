@@ -62,7 +62,9 @@ class Source(db.Model):
     def update_cookies(cls, old, new):
         if old and new:
             db.session.execute(
-                update(cls).where(cls.cookies == old).values(cookies=new)
+                update(cls)
+                .where(cls.cookies == old)
+                .values(cookies=new, error="")
             )
 
     def update_magnet(self, magnet: Magnet):
