@@ -1,4 +1,3 @@
-import json
 from typing import List
 
 from flask_wtf import FlaskForm
@@ -7,17 +6,11 @@ from wtforms.widgets import TextArea
 
 from ..models import ALL_SEASONS, DEFAULT_QUALITY
 from ..sonarr import Season
-from .fields import StringField, TextAreaField, URLField
+from .fields import JSONField, StringField, TextAreaField, URLField
 from .widgets import UserAgentInput
 
 
 class SourceForm(FlaskForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if isinstance(self.cookies.data, (dict, list)):
-            self.cookies.data = (
-                json.dumps(self.cookies.data) if self.cookies.data else ""
-            )
 
     url = URLField(
         "URL",
@@ -47,9 +40,8 @@ class SourceForm(FlaskForm):
         default=0,
         description="Time delta between release date and air date",
     )
-    cookies = TextAreaField(
+    cookies = JSONField(
         "Cookies",
-        required=False,
         description=(
             "(optional) Used for authentication."
             " The value can change between requests."

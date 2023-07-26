@@ -106,6 +106,9 @@ def parse(url, cookies, user_agent):
     except requests.RequestException as e:
         logger.error(e)
         raise ParseError("Request Error")
+    except ValueError as e:
+        logger.error(e)
+        raise ParseError("Cookies parse error")
     except Exception as e:
         logger.error(e)
         raise ParseError("Unknown Error")

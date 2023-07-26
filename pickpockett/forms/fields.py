@@ -1,3 +1,5 @@
+import json
+
 import wtforms
 
 
@@ -33,3 +35,9 @@ class TextAreaField(
 
 class URLField(RequiredMixin, StripWhitespacesMixin, wtforms.URLField):
     pass
+
+
+class JSONField(wtforms.TextAreaField):
+    def process_data(self, value):
+        value = json.dumps(value) if value else ""
+        super().process_data(value)
