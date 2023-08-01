@@ -15,7 +15,7 @@ def api():
         return Response(caps)
     elif t in (torznab.SEARCH, torznab.TV_SEARCH):
         search = torznab.tv_search(**kwargs)
-        return Response(search)
+        return Response(search, content_type="application/xml")
     elif t in (
         torznab.REGISTER,
         torznab.MOVIE_SEARCH,
