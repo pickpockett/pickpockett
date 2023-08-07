@@ -4,6 +4,15 @@ from flask import Flask
 from humanize import naturaltime
 from markupsafe import Markup
 
+_pseudo_braille_table = str.maketrans("01234567", "⠂⠆⠖⠶⠷⡷⡿⣿")
+
+
+def braille(value: int):
+    a, b = divmod(value, 8)
+    v = "7" * a + str(b)
+
+    return v.translate(_pseudo_braille_table)
+
 
 def naturalize(value):
     if value is None:
@@ -18,4 +27,5 @@ def naturalize(value):
 
 
 def register(app: Flask):
+    app.add_template_filter(braille)
     app.add_template_filter(naturalize)
