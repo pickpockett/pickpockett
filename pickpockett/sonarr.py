@@ -83,6 +83,10 @@ class Series(BaseModel):
         ]
         return season_episode_list
 
+    def n_files(self) -> int:
+        episode = self.sonarr.episode(self.id)
+        return len([ep for ep in episode if ep.has_file])
+
 
 class SeriesLookup(BaseModel):
     profile_id: int

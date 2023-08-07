@@ -48,6 +48,7 @@ def add_source(tvdb_id):
                 quality=form.quality.data,
                 language=form.language.data,
                 schedule_correction=form.schedule_correction.data,
+                version=series.n_files(),
             )
             return redirect(url_for("ui.index.index"))
     elif form.season.data is None or form.season.data > series.season_count:
