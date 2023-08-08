@@ -1,3 +1,5 @@
+import json
+
 from flask import Blueprint, g, redirect, render_template, request, url_for
 
 from ...forms.source import GuessForm, SourceForm
@@ -73,7 +75,7 @@ def add_smart():
         else:
             args = {k: v for k, v in form.data.items() if k != "submit" and v}
             if magnet.cookies:
-                args["cookies"] = magnet.cookies
+                args["cookies"] = json.dumps(magnet.cookies)
             if user_agent := (magnet.user_agent or form.user_agent.data):
                 args["user_agent"] = user_agent
 

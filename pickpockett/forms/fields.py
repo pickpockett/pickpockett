@@ -1,6 +1,7 @@
 import json
 
 import wtforms
+from wtforms.utils import unset_value
 
 
 def strip_whitespaces(value: str):
@@ -38,6 +39,12 @@ class URLField(RequiredMixin, StripWhitespacesMixin, wtforms.URLField):
 
 
 class JSONField(wtforms.TextAreaField):
+    def process(self, formdata, data=unset_value, extra_filters=None):
+        if isinstance(data, str):
+            data = json.loads(data)
+
+        super().process(formdata, data, extra_filters)
+
     def process_data(self, value):
         value = json.dumps(value) if value else ""
         super().process_data(value)

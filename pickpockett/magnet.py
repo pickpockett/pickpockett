@@ -1,7 +1,7 @@
 import hashlib
 import logging
 import re
-from typing import TYPE_CHECKING, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, cast
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import pyben
@@ -81,7 +81,7 @@ def _hash_from_magnet(magnet_url):
     return infohash
 
 
-def get_magnet(url, cookies, user_agent):
+def get_magnet(url, cookies, user_agent) -> Tuple[Optional[Magnet], str]:
     try:
         magnet = _find_magnet_link(url, cookies, user_agent)
     except ParseError as e:
