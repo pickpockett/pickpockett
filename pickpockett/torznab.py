@@ -177,6 +177,20 @@ def _source_items(sonarr, source, season, episode):
 
     items = []
     for season_num, episode_nums in episode_map.items():
+        season_name = _item_name(
+            series.title, f"S{season_num:02}", source.version, source.extra
+        )
+        magnet = Magnet.from_hash(source.hash, dn=season_name)
+        item = _item(
+            season_name,
+            source.url,
+            source.datetime,
+            magnet.url,
+            magnet.hash,
+            source.tvdb_id,
+        )
+        items.append(item)
+
         first, last = min(episode_nums), max(episode_nums)
         episode_number = _to_optional_int(episode, default=first)
         if first <= episode_number <= last:
@@ -197,20 +211,6 @@ def _source_items(sonarr, source, season, episode):
                 source.tvdb_id,
             )
             items.append(item)
-
-        season_name = _item_name(
-            series.title, f"S{season_num:02}", source.version, source.extra
-        )
-        magnet = Magnet.from_hash(source.hash, dn=season_name)
-        item = _item(
-            season_name,
-            source.url,
-            source.datetime,
-            magnet.url,
-            magnet.hash,
-            source.tvdb_id,
-        )
-        items.append(item)
 
     return items
 
