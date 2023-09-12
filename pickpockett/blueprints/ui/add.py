@@ -67,12 +67,10 @@ def add_smart():
     form = GuessForm()
 
     if request.method == "POST" and form.validate_on_submit():
-        magnet, err = get_magnet(
+        magnet, _ = get_magnet(
             form.url.data, form.cookies.data, form.user_agent.data
         )
-        if err:
-            form.url.errors = [err]
-        else:
+        if magnet:
             args = {k: v for k, v in form.data.items() if k != "submit" and v}
             if magnet.cookies:
                 args["cookies"] = json.dumps(magnet.cookies)

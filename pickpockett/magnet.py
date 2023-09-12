@@ -70,7 +70,7 @@ def _find_magnet_link(url, cookies, user_agent) -> Optional[Magnet]:
                 magnet_link = urlunparse(["magnet", "", "", "", query, ""])
                 return Magnet(magnet_link, page, cookies, user_agent)
 
-    return Magnet(None)
+    return Magnet(None, page, cookies, user_agent)
 
 
 def _hash_from_magnet(magnet_url):
