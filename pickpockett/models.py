@@ -3,7 +3,16 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from sqlalchemy import JSON, Column, DateTime, Integer, String, Text, update
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    String,
+    Text,
+    update,
+)
 
 from . import db
 from .magnet import Magnet
@@ -32,6 +41,7 @@ class Source(db.Model):
     language = Column(Text, nullable=False, server_default="")
     error = Column(Text, nullable=False, server_default="")
     version = Column(Integer, nullable=False, server_default="0")
+    announcement = Column(Boolean, nullable=False, server_default="0")
 
     @classmethod
     def get(cls, ident) -> Source:
@@ -81,6 +91,7 @@ class Source(db.Model):
             self.hash = magnet.hash
             self.datetime = datetime.utcnow()
             self.version += 1
+            self.announcement = False
         db.session.commit()
 
     def update_error(self, err):

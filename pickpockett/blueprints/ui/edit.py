@@ -26,7 +26,7 @@ def edit(source_id):
         magnet, err = get_magnet(
             form.url.data, form.cookies.data, form.user_agent.data
         )
-        if err:
+        if err and not form.announcement.data:
             form.url.errors = [err]
         else:
             if form.url.data != source.url:
@@ -41,6 +41,7 @@ def edit(source_id):
                 language=form.language.data,
                 schedule_correction=form.schedule_correction.data,
                 error="",
+                announcement=form.announcement.data,
             )
             return redirect(url_for("ui.index.index"))
     elif source.error:

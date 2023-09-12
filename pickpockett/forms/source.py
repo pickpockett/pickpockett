@@ -1,7 +1,13 @@
 from typing import List
 
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, SelectField, SubmitField, validators
+from wtforms import (
+    BooleanField,
+    IntegerField,
+    SelectField,
+    SubmitField,
+    validators,
+)
 from wtforms.widgets import TextArea
 
 from ..models import ALL_SEASONS, DEFAULT_QUALITY
@@ -11,13 +17,13 @@ from .widgets import UserAgentInput
 
 
 class SourceForm(FlaskForm):
-
     url = URLField(
         "URL",
         required=True,
         description="Where to find a magnet link",
         widget=TextArea(),
     )
+    announcement = BooleanField("This is an announcement")
     season = SelectField(
         "Season",
         coerce=int,

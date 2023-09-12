@@ -94,6 +94,10 @@ def get_magnet(url, cookies, user_agent) -> Tuple[Optional[Magnet], str]:
 
 def update_magnet(source: "Source"):
     magnet, err = get_magnet(source.url, source.cookies, source.user_agent)
+
+    if (magnet is None or magnet.url is None) and source.announcement:
+        return False
+
     source.update_error(err)
 
     if magnet and magnet.url is None:

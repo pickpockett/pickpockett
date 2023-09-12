@@ -38,7 +38,7 @@ def add_source(tvdb_id):
         magnet, err = get_magnet(
             form.url.data, form.cookies.data, form.user_agent.data
         )
-        if err:
+        if err and not form.announcement.data:
             form.url.errors = [err]
         else:
             Source.create(
@@ -51,6 +51,7 @@ def add_source(tvdb_id):
                 language=form.language.data,
                 schedule_correction=form.schedule_correction.data,
                 version=series.n_files(form.season.data),
+                announcement=form.announcement.data,
             )
             return redirect(url_for("ui.index.index"))
     elif form.season.data is None or form.season.data > series.season_count:
