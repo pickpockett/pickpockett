@@ -5,7 +5,7 @@ from typing import Optional
 from xml.etree import ElementTree as et
 
 from flask import g
-from flask_sqlalchemy import BaseQuery
+from flask_sqlalchemy.query import Query
 
 from .magnet import Magnet, update_magnet
 from .models import ALL_SEASONS, Source
@@ -128,7 +128,7 @@ def _query(q, tvdb_id, season):
         logger.info("'q' search parameter isn't supported")
         return []
 
-    query: BaseQuery = Source.query
+    query: Query = Source.query
 
     if tvdb_id:
         query = query.filter_by(tvdb_id=tvdb_id)
