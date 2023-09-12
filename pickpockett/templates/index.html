@@ -35,6 +35,8 @@
             <span class="badge bg-success">Completed</span>
             {% elif ss.source.error %}
             <span class="badge bg-danger" title="{{ ss.source.error }}">Error</span>
+            {% elif ss.source.announcement %}
+            <span class="badge bg-info">Announcement</span>
             {% endif %}
         </td>
         <td>{{ ss.season }}</td>
