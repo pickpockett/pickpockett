@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 
 import requests
 from cachetools import TTLCache
-from pydantic import BaseModel, parse_obj_as, validator
+from pydantic import BaseModel, Field, TypeAdapter, field_validator
 
 from .models import ALL_SEASONS
 
@@ -17,40 +17,30 @@ logger = logging.getLogger(__name__)
 
 
 class Image(BaseModel):
-    cover_type: Literal["banner", "fanart", "poster", "unknown"]
+    cover_type: Literal["banner", "fanart", "poster", "unknown"] = Field(
+        alias="coverType"
+    )
     url: str
-
-    class Config:
-        fields = {"cover_type": "coverType"}
 
 
 class Season(BaseModel):
-    season_number: int
-
-    class Config:
-        fields = {"season_number": "seasonNumber"}
+    season_number: int = Field(alias="seasonNumber")
 
 
 class Series(BaseModel):
     id: int
     title: str
-    title_slug: str
-    sort_title: str
-    tvdb_id: int
+    title_slug: str = Field(alias="titleSlug")
+    sort_title: str = Field(alias="sortTitle")
+    tvdb_id: int = Field(alias="tvdbId")
     images: List[Image]
     seasons: List[Season]
-    season_count: int
+    season_count: int = Field(alias="seasonCount")
     status: str
     sonarr: Sonarr
 
     class Config:
         arbitrary_types_allowed = True
-        fields = {
-            "season_count": "seasonCount",
-            "sort_title": "sortTitle",
-            "tvdb_id": "tvdbId",
-            "title_slug": "titleSlug",
-        }
 
     def __lt__(self, other: Series):
         return self.sort_title < other.sort_title
@@ -101,34 +91,20 @@ class Series(BaseModel):
 
 
 class SeriesLookup(BaseModel):
-    profile_id: int
-    season_count: int
-    tvdb_id: int
-
-    class Config:
-        fields = {
-            "profile_id": "profileId",
-            "season_count": "seasonCount",
-            "tvdb_id": "tvdbId",
-        }
+    profile_id: int = Field(alias="profileId")
+    season_count: int = Field(alias="seasonCount")
+    tvdb_id: int = Field(alias="tvdbId")
 
 
 class Episode(BaseModel):
-    season_number: int
-    episode_number: int
-    air_date_utc: Optional[datetime] = None
-    has_file: bool
+    season_number: int = Field(alias="seasonNumber")
+    episode_number: int = Field(alias="episodeNumber")
+    air_date_utc: Optional[datetime] = Field(None, alias="airDateUtc")
+    has_file: bool = Field(alias="hasFile")
     monitored: bool
 
-    class Config:
-        fields = {
-            "season_number": "seasonNumber",
-            "episode_number": "episodeNumber",
-            "air_date_utc": "airDateUtc",
-            "has_file": "hasFile",
-        }
-
-    @validator("air_date_utc")
+    @field_validator("air_date_utc")
+    @classmethod
     def remove_tz(cls, air_date_utc: datetime):
         return air_date_utc.replace(tzinfo=None)
 
@@ -163,12 +139,9 @@ class QualityProfile(BaseModel):
 
 
 class ParsedEpisodeInfo(BaseModel):
-    season_number: int
+    season_number: int = Field(alias="seasonNumber")
     language: Language
     quality: QualityItem
-
-    class Config:
-        fields = {"season_number": "seasonNumber"}
 
 
 class SonarrCache(TTLCache):
@@ -189,7 +162,7 @@ class Sonarr:
     cache = SonarrCache()
 
     def __init__(self, sonarr_config):
-        self.url = sonarr_config.url
+        self.url = str(sonarr_config.url)
         self.apikey = sonarr_config.apikey
 
     def _url(self, endpoint):
@@ -206,12 +179,12 @@ class Sonarr:
 
     def episode(self, series_id: int) -> List[Episode]:
         episode = self._get("episode", seriesId=series_id)
-        episode_list = parse_obj_as(List[Episode], episode)
+        episode_list = TypeAdapter(List[Episode]).validate_python(episode)
         return episode_list
 
     def _series(self) -> Dict[int, Series]:
         series = {
-            (s := Series.parse_obj(dict(obj, sonarr=self))).tvdb_id: s
+            (s := Series.model_validate(dict(obj, sonarr=self))).tvdb_id: s
             for obj in self._get("series")
         }
         return series
@@ -229,7 +202,7 @@ class Sonarr:
         return series[tvdb_id]
 
     def _languages(self):
-        language_profile = LanguageProfile.parse_obj(
+        language_profile = LanguageProfile.model_validate(
             self._get("v3/languageprofile/schema")
         )
         return list(
@@ -244,7 +217,7 @@ class Sonarr:
         return self.cache.get_cached("language", self._languages)
 
     def _qualities(self):
-        quality_profile = QualityProfile.parse_obj(
+        quality_profile = QualityProfile.model_validate(
             self._get("v3/qualityprofile/schema")
         )
         qualities = [
@@ -268,7 +241,9 @@ class Sonarr:
         lookup = self._get("series/lookup", term=term)
         lookup_list = [
             series
-            for series in parse_obj_as(List[SeriesLookup], lookup)
+            for series in TypeAdapter(List[SeriesLookup]).validate_python(
+                lookup
+            )
             if series.profile_id > 0
         ]
         return lookup_list
@@ -279,7 +254,7 @@ class Sonarr:
 
         parsed = self._get("parse", title=title)
         if parsed_info := parsed.get("parsedEpisodeInfo"):
-            return ParsedEpisodeInfo.parse_obj(parsed_info)
+            return ParsedEpisodeInfo.model_validate(parsed_info)
 
 
-Series.update_forward_refs()
+Series.model_rebuild()

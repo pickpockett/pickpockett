@@ -3,18 +3,16 @@ from typing import Any, Dict, List
 from urllib.parse import urljoin
 
 import requests
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class FlareSolverrSolution(BaseModel):
     cookies: Dict[str, Any]
     response: str
-    user_agent: str
+    user_agent: str = Field(alias="userAgent")
 
-    class Config:
-        fields = {"user_agent": "userAgent"}
-
-    @validator("cookies", pre=True)
+    @field_validator("cookies", mode="before")
+    @classmethod
     def cookies_to_dict(cls, cookies: List[Dict[str, Any]]):
         return {cookie["name"]: cookie["value"] for cookie in cookies}
 
@@ -25,7 +23,7 @@ class FlareSolverrResponse(BaseModel):
 
 class FlareSolverr:
     def __init__(self, flaresolverr_config):
-        self.url = flaresolverr_config.url
+        self.url = str(flaresolverr_config.url)
         self.timeout = flaresolverr_config.timeout
         self._session = None
 
@@ -64,7 +62,7 @@ class FlareSolverr:
         }
 
         response = self._post(data)
-        return FlareSolverrResponse.parse_obj(response)
+        return FlareSolverrResponse.model_validate(response)
 
     def destroy(self):
         if self._session is not None:

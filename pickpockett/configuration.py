@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional, Union
 
 from pydantic import AnyHttpUrl, BaseModel
 
@@ -9,16 +9,8 @@ class GeneralConfig(BaseModel):
     user_agent: str = ""
 
 
-class OptionalHttpUrl(AnyHttpUrl):
-    @classmethod
-    def validate(cls, value, field, config):
-        if value:
-            return super().validate(value, field, config)
-        return ""
-
-
 class FlareSolverrConfig(BaseModel):
-    url: OptionalHttpUrl
+    url: Union[AnyHttpUrl, Literal[""]]
     timeout: int = 60000
 
 
@@ -41,7 +33,7 @@ class ConfigManager:
     def load(self):
         if self.config is None:
             if self.path.exists():
-                self.config = Config.parse_file(self.path)
+                self.config = Config.model_validate_json(self.path.read_text())
             else:
                 self.config = Config(general=GeneralConfig())
         return self.config
@@ -49,7 +41,7 @@ class ConfigManager:
     def save(self, obj):
         from .scheduler import reschedule
 
-        self.config = Config.parse_obj(obj)
-        self.path.write_text(self.config.json())
+        self.config = Config.model_validate(obj)
+        self.path.write_text(self.config.model_dump_json())
 
         reschedule(self.config)
