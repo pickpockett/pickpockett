@@ -34,6 +34,7 @@ class Season(BaseModel):
 class Series(BaseModel):
     id: int
     title: str
+    title_slug: str
     sort_title: str
     tvdb_id: int
     images: List[Image]
@@ -48,6 +49,7 @@ class Series(BaseModel):
             "season_count": "seasonCount",
             "sort_title": "sortTitle",
             "tvdb_id": "tvdbId",
+            "title_slug": "titleSlug",
         }
 
     def __lt__(self, other: Series):
@@ -92,6 +94,10 @@ class Series(BaseModel):
                 if season in (ALL_SEASONS, ep.season_number) and ep.has_file
             ]
         )
+
+    @property
+    def url(self):
+        return urljoin(self.sonarr.url, f"series/{self.title_slug}")
 
 
 class SeriesLookup(BaseModel):
