@@ -21,8 +21,8 @@ class SonarrConfig(BaseModel):
 
 class Config(BaseModel):
     general: GeneralConfig
-    sonarr: Optional[SonarrConfig]
-    flaresolverr: Optional[FlareSolverrConfig]
+    sonarr: Optional[SonarrConfig] = None
+    flaresolverr: Optional[FlareSolverrConfig] = None
 
 
 class ConfigManager:
