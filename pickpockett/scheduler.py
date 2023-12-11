@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from flask import Flask, g
 from flask_apscheduler import APScheduler
 
-from . import Config, config
+from . import Config
+from .blueprints import before_request
 from .magnet import update_magnet
 from .models import Source
-from .sonarr import Sonarr
 
 logger = logging.getLogger(__name__)
 
@@ -16,16 +16,14 @@ scheduler = APScheduler()
 
 def check():
     with scheduler.app.app_context():
-        g.config = config.load()
+        before_request()
 
-        if not g.config.sonarr:
+        if not g.sonarr:
             return
-
-        sonarr = Sonarr(g.config.sonarr)
 
         for source in Source.query:
             if not source.error and source.datetime and not source.cookies:
-                series = sonarr.get_series(source.tvdb_id)
+                series = g.sonarr.get_series(source.tvdb_id)
                 if series is None:
                     continue
 
