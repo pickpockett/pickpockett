@@ -32,9 +32,11 @@ def check():
                 )
                 now = datetime.utcnow() + schedule_correction
 
-                episodes = series.get_episodes(source.season, now)
+                if not (episodes := series.get_episodes(source.season, now)):
+                    continue
+
                 last_aired = max(
-                    ep.air_date_utc for ep in episodes if ep.air_date_utc
+                    ep.air_date_utc or datetime.min for ep in episodes
                 )
 
                 if last_aired < source.datetime:
