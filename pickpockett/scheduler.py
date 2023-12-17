@@ -1,7 +1,7 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from flask import Flask, g
+from flask import Flask
 from flask_apscheduler import APScheduler
 
 from . import Config
@@ -18,30 +18,7 @@ def check():
     with scheduler.app.app_context():
         before_request()
 
-        if not g.sonarr:
-            return
-
         for source in Source.query:
-            if not source.error and source.datetime and not source.cookies:
-                series = g.sonarr.get_series(source.tvdb_id)
-                if series is None:
-                    continue
-
-                schedule_correction = timedelta(
-                    days=source.schedule_correction
-                )
-                now = datetime.utcnow() + schedule_correction
-
-                if not (episodes := series.get_episodes(source.season, now)):
-                    continue
-
-                last_aired = max(
-                    ep.air_date_utc or datetime.min for ep in episodes
-                )
-
-                if last_aired < source.datetime:
-                    continue
-
             update_magnet(source)
 
 
