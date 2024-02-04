@@ -89,8 +89,8 @@ def add_smart():
                         args["season"] = parsed.season_number
                     if parsed.quality.quality.name != "Unknown":
                         args["quality"] = parsed.quality.quality.name
-                    if parsed.language.name != "English":
-                        args["language"] = parsed.language.name
+                    if parsed.languages and parsed.languages[0].id > 1:
+                        args["language"] = parsed.languages[0].name
                 if len(lookup) == 1:
                     return redirect(
                         url_for(

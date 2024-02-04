@@ -9,7 +9,14 @@ from urllib.parse import urljoin
 
 import requests
 from cachetools import TTLCache
-from pydantic import BaseModel, Field, TypeAdapter, field_validator
+from pydantic import (
+    AliasChoices,
+    AliasPath,
+    BaseModel,
+    Field,
+    TypeAdapter,
+    field_validator,
+)
 
 from .models import ALL_SEASONS
 
@@ -20,11 +27,14 @@ class Image(BaseModel):
     cover_type: Literal["banner", "fanart", "poster", "unknown"] = Field(
         alias="coverType"
     )
-    url: str
+    url: str = ""
 
 
 class Season(BaseModel):
     season_number: int = Field(alias="seasonNumber")
+
+
+season_count_alias = AliasPath("statistics", "seasonCount")
 
 
 class Series(BaseModel):
@@ -35,7 +45,7 @@ class Series(BaseModel):
     tvdb_id: int = Field(alias="tvdbId")
     images: List[Image]
     seasons: List[Season]
-    season_count: int = Field(alias="seasonCount")
+    season_count: int = Field(validation_alias=season_count_alias)
     status: str
     sonarr: Sonarr
 
@@ -91,8 +101,8 @@ class Series(BaseModel):
 
 
 class SeriesLookup(BaseModel):
-    profile_id: int = Field(alias="profileId")
-    season_count: int = Field(alias="seasonCount")
+    quality_profile_id: int = Field(alias="qualityProfileId")
+    season_count: int = Field(validation_alias=season_count_alias)
     tvdb_id: int = Field(alias="tvdbId")
 
 
@@ -110,15 +120,12 @@ class Episode(BaseModel):
 
 
 class Language(BaseModel):
+    id: int = Field(validation_alias=AliasChoices("id", "value"))
     name: str
 
 
-class LanguageItem(BaseModel):
-    language: Language
-
-
 class LanguageProfile(BaseModel):
-    languages: List[LanguageItem]
+    languages: List[Language] = Field(alias="selectOptions")
 
 
 class Quality(BaseModel):
@@ -140,7 +147,7 @@ class QualityProfile(BaseModel):
 
 class ParsedEpisodeInfo(BaseModel):
     season_number: int = Field(alias="seasonNumber")
-    language: Language
+    languages: List[Language]
     quality: QualityItem
 
 
@@ -166,7 +173,7 @@ class Sonarr:
         self.apikey = sonarr_config.apikey
 
     def _url(self, endpoint):
-        return urljoin(self.url, f"api/{endpoint}")
+        return urljoin(self.url, f"api/v3/{endpoint}")
 
     def _get(self, endpoint, **kwargs):
         url = self._url(endpoint)
@@ -202,14 +209,19 @@ class Sonarr:
         return series[tvdb_id]
 
     def _languages(self):
+        schema = self._get("customformat/schema")
         language_profile = LanguageProfile.model_validate(
-            self._get("v3/languageprofile/schema")
+            next(
+                impl["fields"][0]
+                for impl in schema
+                if impl["implementationName"] == "Language"
+            )
         )
         return list(
             sorted(
-                language_item.language.name
-                for language_item in language_profile.languages
-                if language_item.language.name != "Unknown"
+                language.name
+                for language in language_profile.languages
+                if language.id > 1
             )
         )
 
@@ -218,7 +230,7 @@ class Sonarr:
 
     def _qualities(self):
         quality_profile = QualityProfile.model_validate(
-            self._get("v3/qualityprofile/schema")
+            self._get("qualityprofile/schema")
         )
         qualities = [
             quality
@@ -244,7 +256,7 @@ class Sonarr:
             for series in TypeAdapter(List[SeriesLookup]).validate_python(
                 lookup
             )
-            if series.profile_id > 0
+            if series.quality_profile_id > 0
         ]
         return lookup_list
 
