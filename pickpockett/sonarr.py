@@ -24,9 +24,15 @@ logger = logging.getLogger(__name__)
 
 
 class Image(BaseModel):
-    cover_type: Literal["banner", "fanart", "poster", "unknown"] = Field(
-        alias="coverType"
-    )
+    cover_type: Literal[
+        "unknown",
+        "poster",
+        "banner",
+        "fanart",
+        "screenshot",
+        "headshot",
+        "clearlogo",
+    ] = Field(alias="coverType")
     url: str = ""
 
 
