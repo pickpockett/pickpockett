@@ -212,31 +212,31 @@ def _source_items(sonarr, source, season, episode):
             )
             items.append(item)
 
-        episode_num = _to_optional_int(episode)
-        eps = (
-            episode_nums
-            if episode_num is None
-            else [episode_num]
-            if episode_num in episode_nums
-            else []
-        )
-        for ep in eps:
-            episode_name = _item_name(
-                series.title,
-                f"S{season_num:02}E{ep:02}",
-                source.version,
-                source.extra,
-            )
-            magnet = Magnet.from_hash(source.hash, dn=episode_name)
-            item = _item(
-                episode_name,
-                source.url,
-                source.datetime,
-                magnet.url,
-                magnet.hash,
-                source.tvdb_id,
-            )
-            items.append(item)
+        # episode_num = _to_optional_int(episode)
+        # eps = (
+        #     episode_nums
+        #     if episode_num is None
+        #     else [episode_num]
+        #     if episode_num in episode_nums
+        #     else []
+        # )
+        # for ep in eps:
+        #     episode_name = _item_name(
+        #         series.title,
+        #         f"S{season_num:02}E{ep:02}",
+        #         source.version,
+        #         source.extra,
+        #     )
+        #     magnet = Magnet.from_hash(source.hash, dn=episode_name)
+        #     item = _item(
+        #         episode_name,
+        #         source.url,
+        #         source.datetime,
+        #         magnet.url,
+        #         magnet.hash,
+        #         source.tvdb_id,
+        #     )
+        #     items.append(item)
 
     return items
 
