@@ -171,7 +171,7 @@ def _source_items(sonarr, source, season, episode):
         return []
 
     episode_map = {
-        s: [e.episode_number for e in eps]
+        s: {e.episode_number: e for e in eps}
         for s, eps in groupby(episodes, lambda x: x.season_number)
     }
 
@@ -212,31 +212,29 @@ def _source_items(sonarr, source, season, episode):
             )
             items.append(item)
 
-        # episode_num = _to_optional_int(episode)
-        # eps = (
-        #     episode_nums
-        #     if episode_num is None
-        #     else [episode_num]
-        #     if episode_num in episode_nums
-        #     else []
-        # )
-        # for ep in eps:
-        #     episode_name = _item_name(
-        #         series.title,
-        #         f"S{season_num:02}E{ep:02}",
-        #         source.version,
-        #         source.extra,
-        #     )
-        #     magnet = Magnet.from_hash(source.hash, dn=episode_name)
-        #     item = _item(
-        #         episode_name,
-        #         source.url,
-        #         source.datetime,
-        #         magnet.url,
-        #         magnet.hash,
-        #         source.tvdb_id,
-        #     )
-        #     items.append(item)
+        missing_episodes = [
+            ep
+            for ep in episode_nums
+            if not episode_map[season_num][ep].has_file
+        ]
+        if missing_episodes and episode is None:
+            episodes_name = _item_name(
+                series.title,
+                f"S{season_num:02}"
+                + "".join(f"E{ep:02}" for ep in missing_episodes),
+                source.version,
+                source.extra,
+            )
+            magnet = Magnet.from_hash(source.hash, dn=episodes_name)
+            item = _item(
+                episodes_name,
+                source.url,
+                source.datetime,
+                magnet.url,
+                magnet.hash,
+                source.tvdb_id,
+            )
+            items.append(item)
 
     return items
 
