@@ -145,8 +145,8 @@ def _to_optional_int(value, *, default=None) -> Optional[int]:
 def _item_name(title, content, version, extra):
     name = f"{title} {content}"
 
-    if version > 1:
-        name += f" [v{version}]"
+    # if version > 1:
+    #     name += f" [v{version}]"
 
     if extra:
         name += f" [{extra}]"
