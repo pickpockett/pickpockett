@@ -151,6 +151,8 @@ def _item_name(title, content, version, extra):
     if extra:
         name += f" [{extra}]"
 
+    name += " (PickPockett)"
+
     return name
 
 
