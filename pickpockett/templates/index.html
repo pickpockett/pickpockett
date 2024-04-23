@@ -40,7 +40,7 @@
             <span class="badge bg-info">Announcement</span>
             {% endif %}
         </td>
-        <td>{{ ss.season }}{% if ss.source.report_existing %}&#8314;{% endif %}</td>
+        <td>{{ ss.season }}{% if ss.source.report_existing %}<sup>&bull;</sup>{% endif %}</td>
         <td>{{ ss.source.quality }}</td>
         <td>{{ ss.source.language }}</td>
         <td>{{ ss.source.datetime | naturalize }}</td>
