@@ -193,50 +193,44 @@ def _source_items(sonarr, source, season, episode):
         )
         items.append(item)
 
-        first, last = min(episode_nums), max(episode_nums)
-        episode_number = _to_optional_int(episode, default=first)
-        if first <= episode_number <= last:
-            episodes_name = _item_name(
-                series.title,
-                f"S{season_num:02}"
-                + "-".join(f"E{ep:02}" for ep in sorted({first, last})),
-                source.version,
-                source.extra,
-            )
-            magnet = Magnet.from_hash(source.hash, dn=episodes_name)
-            item = _item(
-                episodes_name,
-                source.url,
-                source.datetime,
-                magnet.url,
-                magnet.hash,
-                source.tvdb_id,
-            )
-            items.append(item)
+        if episode is None and not source.report_existing:
+            episode_nums = [
+                ep
+                for ep in episode_nums
+                if not episode_map[season_num][ep].has_file
+            ]
 
-        missing_episodes = [
-            ep
-            for ep in episode_nums
-            if not episode_map[season_num][ep].has_file
-        ]
-        if missing_episodes and episode is None:
-            episodes_name = _item_name(
-                series.title,
-                f"S{season_num:02}"
-                + "".join(f"E{ep:02}" for ep in missing_episodes),
-                source.version,
-                source.extra,
+        if episode_nums:
+            episode_number = _to_optional_int(
+                episode, default=min(episode_nums)
             )
-            magnet = Magnet.from_hash(source.hash, dn=episodes_name)
-            item = _item(
-                episodes_name,
-                source.url,
-                source.datetime,
-                magnet.url,
-                magnet.hash,
-                source.tvdb_id,
-            )
-            items.append(item)
+
+            if episode_number in episode_nums:
+                ep_groups = [
+                    tuple(sorted({min(a := [v for _, v in gr]), max(a)}))
+                    for _, gr in groupby(
+                        enumerate(episode_nums), lambda x: x[0] - x[1]
+                    )
+                ]
+                episodes_name = _item_name(
+                    series.title,
+                    f"S{season_num:02}"
+                    + ",".join(
+                        "-".join(f"E{s:02}" for s in a) for a in ep_groups
+                    ),
+                    source.version,
+                    source.extra,
+                )
+                magnet = Magnet.from_hash(source.hash, dn=episodes_name)
+                item = _item(
+                    episodes_name,
+                    source.url,
+                    source.datetime,
+                    magnet.url,
+                    magnet.hash,
+                    source.tvdb_id,
+                )
+                items.append(item)
 
     return items
 

@@ -42,6 +42,7 @@ def edit(source_id):
                 schedule_correction=form.schedule_correction.data,
                 error="",
                 announcement=form.announcement.data,
+                report_existing=form.report_existing.data,
             )
             return redirect(url_for("ui.index.index"))
     elif source.error:

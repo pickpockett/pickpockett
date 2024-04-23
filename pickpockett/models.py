@@ -4,11 +4,11 @@ import logging
 from datetime import datetime
 
 from sqlalchemy import (
-    JSON,
     Boolean,
     Column,
     DateTime,
     Integer,
+    JSON,
     String,
     Text,
     update,
@@ -42,6 +42,7 @@ class Source(db.Model):
     error = Column(Text, nullable=False, server_default="")
     version = Column(Integer, nullable=False, server_default="0")
     announcement = Column(Boolean, nullable=False, server_default="0")
+    report_existing = Column(Boolean, nullable=False, server_default="0")
 
     @classmethod
     def get(cls, ident) -> Source:

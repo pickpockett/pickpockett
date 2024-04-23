@@ -10,10 +10,10 @@ from wtforms import (
 )
 from wtforms.widgets import TextArea
 
-from ..models import ALL_SEASONS, DEFAULT_QUALITY
-from ..sonarr import Season
 from .fields import JSONField, StringField, TextAreaField, URLField
 from .widgets import UserAgentInput
+from ..models import ALL_SEASONS, DEFAULT_QUALITY
+from ..sonarr import Season
 
 
 class SourceForm(FlaskForm):
@@ -61,6 +61,12 @@ class SourceForm(FlaskForm):
         required=False,
         description="(optional) Could be helpful to bypass Cloudflare",
         widget=UserAgentInput(),
+    )
+    report_existing = BooleanField(
+        "Report all episodes",
+        description="Report only missing episodes if unchecked (default).<br>"
+        "Useful if a source updates already downloaded episodes. "
+        "Requires Custom Formats setup for proper grabbing",
     )
     submit = SubmitField(render_kw={"hidden": True})
 

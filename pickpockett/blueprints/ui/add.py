@@ -52,6 +52,7 @@ def add_source(tvdb_id):
                 schedule_correction=form.schedule_correction.data,
                 version=series.n_files(form.season.data),
                 announcement=form.announcement.data,
+                report_existing=form.report_existing.data,
             )
             return redirect(url_for("ui.index.index"))
     elif form.season.data is None or form.season.data > series.season_count:
