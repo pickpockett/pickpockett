@@ -62,7 +62,10 @@ class Series(BaseModel):
         return self.sort_title < other.sort_title
 
     def image(self, cover_type: Literal["banner", "fanart", "poster"]):
-        return next(i for i in self.images if i.cover_type == cover_type)
+        return next(
+            (i for i in self.images if i.cover_type == cover_type),
+            self.images[0],
+        )
 
     @property
     def poster(self):
