@@ -179,6 +179,22 @@ def _source_items(sonarr, source, season, episode):
 
     items = []
     for season_num, ep_nums in episode_map.items():
+        if season is not None and episode is None:
+            season_name = _item_name(
+                series.title, f"S{season_num:02}", source.version, source.extra
+            )
+            magnet = Magnet.from_hash(source.hash, dn=season_name)
+            item = _item(
+                season_name,
+                source.url,
+                source.datetime,
+                magnet.url,
+                magnet.hash,
+                source.tvdb_id,
+            )
+            items.append(item)
+            continue
+
         episode_nums = []
         for episode_num in ep_nums:
             ep = episode_map[season_num][episode_num]
