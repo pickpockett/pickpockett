@@ -182,13 +182,10 @@ def _source_items(sonarr, source, season, episode):
         episode_nums = []
         for episode_num in ep_nums:
             ep = episode_map[season_num][episode_num]
-            if (
-                episode is not None
-                or source.report_existing
-                or not ep.has_file
-            ):
+            if episode is not None or source.report_existing:
                 episode_nums.append(episode_num)
-            if not ep.has_file:
+            elif not ep.has_file:
+                episode_nums.append(episode_num)
                 break
 
         if episode_nums:
