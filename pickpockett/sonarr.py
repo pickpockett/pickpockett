@@ -90,7 +90,7 @@ class Series(BaseModel):
             for ep in episode
             if ep.monitored
             and season in (ALL_SEASONS, ep.season_number)
-            and (ep.air_date_utc or datetime.min) < dt
+            and (ep.air_date_utc or datetime.max) < dt
         ]
         return season_episode_list
 
