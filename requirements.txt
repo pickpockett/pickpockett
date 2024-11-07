@@ -15,5 +15,5 @@ cachetools==5.3.3
 humanize==4.9.0
 pyben==0.3.2
 pydantic==2.6.4
-requests==2.31.0
-waitress==3.0.0
+requests==2.32.0
+waitress==3.0.1
