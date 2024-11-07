@@ -1,7 +1,7 @@
 import hashlib
 import logging
 import re
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, cast
+from typing import Dict, List, Optional, TYPE_CHECKING, Tuple, cast
 from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import pyben
@@ -93,6 +93,7 @@ def get_magnet(url, cookies, user_agent) -> Tuple[Optional[Magnet], str]:
 
 
 def update_magnet(source: "Source"):
+    source.refresh()
     magnet, err = get_magnet(source.url, source.cookies, source.user_agent)
 
     if (magnet is None or magnet.url is None) and source.announcement:

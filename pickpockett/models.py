@@ -60,7 +60,7 @@ class Source(db.Model):
         db.session.commit()
 
     def update(self, **kwargs):
-        self.update_cookies(self.cookies, kwargs.pop("cookies"))
+        self.update_cookies(kwargs.pop("cookies"))
         for key, value in kwargs.items():
             setattr(self, key, value)
         db.session.commit()
@@ -69,17 +69,20 @@ class Source(db.Model):
     def extra(self):
         return ", ".join(e for e in (self.language, self.quality) if e)
 
-    @classmethod
-    def update_cookies(cls, old, new):
-        if old and new:
-            db.session.execute(
-                update(cls)
-                .where(cls.cookies == old)
-                .values(cookies=new, error="")
-            )
+    def update_cookies(self, new):
+        if new:
+            if self.cookies:
+                db.session.execute(
+                    update(self.__class__)
+                    .where(self.__class__.cookies == self.cookies)
+                    .values(cookies=new, error="")
+                )
+            else:
+                self.cookies = new
+                self.error = ""
 
     def update_magnet(self, magnet: Magnet):
-        self.update_cookies(self.cookies, magnet.cookies)
+        self.update_cookies(magnet.cookies)
         if magnet.user_agent:
             self.user_agent = magnet.user_agent
         if self.hash != magnet.hash:
@@ -98,3 +101,6 @@ class Source(db.Model):
     def update_error(self, err):
         self.error = err or ""
         db.session.commit()
+
+    def refresh(self):
+        db.session.refresh(self)
