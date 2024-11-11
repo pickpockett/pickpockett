@@ -70,15 +70,21 @@ class Source(db.Model):
         return ", ".join(e for e in (self.language, self.quality) if e)
 
     def update_cookies(self, new):
-        if new:
+        cookies = {
+            key: value
+            for key, value in new.items()
+            if key in self.cookies or not self.cookies
+        }
+
+        if cookies:
             if self.cookies:
                 db.session.execute(
                     update(self.__class__)
                     .where(self.__class__.cookies == self.cookies)
-                    .values(cookies=new, error="")
+                    .values(cookies=cookies, error="")
                 )
             else:
-                self.cookies = new
+                self.cookies = cookies
                 self.error = ""
 
     def update_magnet(self, magnet: Magnet):
