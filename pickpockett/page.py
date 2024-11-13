@@ -44,6 +44,7 @@ def _prep_headers(url, user_agent):
 def _get_page(url, cookies, user_agent):
     headers = _prep_headers(url, user_agent)
     response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
+    cookies = cookies.copy()
     cookies.update(response.cookies.get_dict())
     if 400 <= response.status_code < 500 and g.flaresolverr:
         try:
