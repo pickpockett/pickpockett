@@ -1,4 +1,3 @@
-import json
 import logging
 
 import requests
@@ -6,32 +5,6 @@ from bs4 import BeautifulSoup
 from flask import g
 
 logger = logging.getLogger(__name__)
-
-
-def _prepare_cookies(cookies):
-    if not cookies:
-        return {}
-
-    cookies_orig = cookies
-
-    if isinstance(cookies, str):
-        try:
-            cookies = json.loads(cookies)
-        except json.JSONDecodeError:
-            return {
-                k: v
-                for k, _, v in (
-                    s.strip().partition("=") for s in cookies.split(";")
-                )
-            }
-
-    if isinstance(cookies, dict):
-        return cookies
-
-    if isinstance(cookies, list):
-        return {c["name"]: c["value"] for c in cookies}
-
-    raise ValueError(f"Wrong cookies {cookies_orig!r}")
 
 
 class ParseError(Exception):
@@ -53,7 +26,7 @@ HEADERS = {
 }
 
 
-def _prep_headers_and_cookies(url, cookies, user_agent):
+def _prep_headers(url, user_agent):
     conf = g.config
     if not user_agent and conf.general.user_agent:
         user_agent = conf.general.user_agent
@@ -65,12 +38,11 @@ def _prep_headers_and_cookies(url, cookies, user_agent):
     if user_agent:
         headers["User-Agent"] = user_agent
 
-    cookies = _prepare_cookies(cookies)
-    return headers, cookies
+    return headers
 
 
 def _get_page(url, cookies, user_agent):
-    headers, cookies = _prep_headers_and_cookies(url, cookies, user_agent)
+    headers = _prep_headers(url, user_agent)
     response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
     cookies.update(response.cookies.get_dict())
     if 400 <= response.status_code < 500 and g.flaresolverr:
@@ -118,7 +90,7 @@ def parse(url, cookies, user_agent):
 
 
 def get_torrent(url, cookies, user_agent):
-    headers, cookies = _prep_headers_and_cookies(url, cookies, user_agent)
+    headers = _prep_headers(url, user_agent)
     response = requests.get(url, cookies=cookies, headers=headers, timeout=5)
     if response.headers.get("content-type") == "application/x-bittorrent":
         return response.content

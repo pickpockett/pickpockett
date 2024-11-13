@@ -10,7 +10,7 @@ from wtforms import (
 )
 from wtforms.widgets import TextArea
 
-from .fields import JSONField, StringField, TextAreaField, URLField
+from .fields import CookiesField, StringField, TextAreaField, URLField
 from .widgets import UserAgentInput
 from ..models import ALL_SEASONS, DEFAULT_QUALITY
 from ..sonarr import Season
@@ -46,7 +46,7 @@ class SourceForm(FlaskForm):
         default=0,
         description="Time delta between release date and air date",
     )
-    cookies = JSONField(
+    cookies = CookiesField(
         "Cookies",
         description=(
             "(optional) Used for authentication."
@@ -76,9 +76,11 @@ class SourceForm(FlaskForm):
             *(
                 (
                     s.season_number,
-                    f"Season {s.season_number}"
-                    if s.season_number
-                    else "Specials",
+                    (
+                        f"Season {s.season_number}"
+                        if s.season_number
+                        else "Specials"
+                    ),
                 )
                 for s in seasons
             ),

@@ -84,7 +84,7 @@ class Source(db.Model):
     def update_magnet(self, magnet: Magnet):
         cookies = {
             key: value
-            for key, value in magnet.cookies
+            for key, value in magnet.cookies.items()
             if key in self.cookies or not self.cookies
         }
         self.update_cookies(cookies)
