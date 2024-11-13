@@ -59,8 +59,9 @@ class Source(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def update(self, **kwargs):
-        self.update_cookies(kwargs.pop("cookies"))
+    def update(self, cookies=None, **kwargs):
+        if cookies is not None:
+            self.update_cookies(cookies)
         for key, value in kwargs.items():
             setattr(self, key, value)
         db.session.commit()
@@ -70,25 +71,23 @@ class Source(db.Model):
         return ", ".join(e for e in (self.language, self.quality) if e)
 
     def update_cookies(self, new):
-        cookies = {
-            key: value
-            for key, value in new.items()
-            if key in self.cookies or not self.cookies
-        }
-
-        if cookies:
-            if self.cookies:
-                db.session.execute(
-                    update(self.__class__)
-                    .where(self.__class__.cookies == self.cookies)
-                    .values(cookies=cookies, error="")
-                )
-            else:
-                self.cookies = cookies
-                self.error = ""
+        if self.cookies and new:
+            db.session.execute(
+                update(self.__class__)
+                .where(self.__class__.cookies == self.cookies)
+                .values(cookies=new, error="")
+            )
+        else:
+            self.cookies = new
+            self.error = ""
 
     def update_magnet(self, magnet: Magnet):
-        self.update_cookies(magnet.cookies)
+        cookies = {
+            key: value
+            for key, value in magnet.cookies
+            if key in self.cookies or not self.cookies
+        }
+        self.update_cookies(cookies)
         if magnet.user_agent:
             self.user_agent = magnet.user_agent
         if self.hash != magnet.hash:

@@ -32,10 +32,15 @@ def edit(source_id):
             if form.url.data != source.url:
                 source.hash = ""
                 source.datetime = None
+            cookies = {
+                key: value
+                for key, value in magnet.cookies.items()
+                if key in form.cookies.data
+            }
             source.update(
                 url=form.url.data,
                 season=form.season.data,
-                cookies=magnet.cookies,
+                cookies=cookies,
                 user_agent=magnet.user_agent or form.user_agent.data,
                 quality=form.quality.data,
                 language=form.language.data,
