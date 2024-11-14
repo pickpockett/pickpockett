@@ -65,9 +65,8 @@ def _prepare_cookies(cookies):
 
 class CookiesField(wtforms.TextAreaField):
     def process_formdata(self, valuelist):
-        data = _prepare_cookies(valuelist[0])
-        super().process_formdata([data])
+        value = _prepare_cookies(valuelist[0])
+        super().process_formdata([value])
 
-    def process_data(self, value):
-        value = json.dumps(value) if value else ""
-        super().process_data(value)
+    def _value(self):
+        return json.dumps(self.data) if self.data else ""
