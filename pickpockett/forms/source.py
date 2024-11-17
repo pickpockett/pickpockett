@@ -10,7 +10,7 @@ from wtforms import (
 )
 from wtforms.widgets import TextArea
 
-from .fields import CookiesField, StringField, TextAreaField, URLField
+from .fields import CookiesField, StringField, URLField
 from .widgets import UserAgentInput
 from ..models import ALL_SEASONS, DEFAULT_QUALITY
 from ..sonarr import Season
@@ -107,9 +107,8 @@ class GuessForm(FlaskForm):
         description="Guess a series from this link",
         widget=TextArea(),
     )
-    cookies = TextAreaField(
+    cookies = CookiesField(
         "Cookies",
-        required=False,
         description=(
             "(optional) Used for authentication."
             ' Here is an <a href="https://chrome.google.com/webstore/detail'

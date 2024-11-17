@@ -27,12 +27,6 @@ class StringField(RequiredMixin, StripWhitespacesMixin, wtforms.StringField):
     pass
 
 
-class TextAreaField(
-    RequiredMixin, StripWhitespacesMixin, wtforms.TextAreaField
-):
-    pass
-
-
 class URLField(RequiredMixin, StripWhitespacesMixin, wtforms.URLField):
     pass
 
@@ -67,6 +61,10 @@ class CookiesField(wtforms.TextAreaField):
     def process_formdata(self, valuelist):
         value = _prepare_cookies(valuelist[0])
         super().process_formdata([value])
+
+    def process_data(self, value):
+        value = _prepare_cookies(value)
+        super().process_data(value)
 
     def _value(self):
         return json.dumps(self.data) if self.data else ""
