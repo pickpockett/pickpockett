@@ -37,7 +37,7 @@ class URLField(RequiredMixin, StripWhitespacesMixin, wtforms.URLField):
     pass
 
 
-def _prepare_cookies(cookies):
+def prepare_cookies(cookies):
     if not cookies:
         return {}
 
@@ -65,7 +65,7 @@ def _prepare_cookies(cookies):
 
 class CookiesField(wtforms.TextAreaField):
     def process_formdata(self, valuelist):
-        value = _prepare_cookies(valuelist[0])
+        value = prepare_cookies(valuelist[0])
         super().process_formdata([value])
 
     def _value(self):
