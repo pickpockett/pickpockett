@@ -51,7 +51,7 @@ class Series(BaseModel):
     tvdb_id: int = Field(alias="tvdbId")
     images: List[Image]
     seasons: List[Season]
-    season_count: int = Field(validation_alias=season_count_alias)
+    season_count: int = Field(validation_alias=season_count_alias, default=0)
     status: str
     sonarr: Sonarr
 
@@ -245,9 +245,14 @@ class Sonarr:
             quality
             for quality in chain(
                 *(
-                    (quality.quality.name for quality in quality_group.items)
-                    if quality_group.items
-                    else [quality_group.quality.name]
+                    (
+                        (
+                            quality.quality.name
+                            for quality in quality_group.items
+                        )
+                        if quality_group.items
+                        else [quality_group.quality.name]
+                    )
                     for quality_group in quality_profile.items
                 )
             )

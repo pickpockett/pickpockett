@@ -55,7 +55,9 @@ def add_source(tvdb_id):
                 report_existing=form.report_existing.data,
             )
             return redirect(url_for("ui.index.index"))
-    elif form.season.data is None or form.season.data > series.season_count:
+    elif series.season_count and (
+        form.season.data is None or form.season.data > series.season_count
+    ):
         form.season.data = series.seasons[-1].season_number
 
     return render_template("add_source.html", form=form, series=series)
