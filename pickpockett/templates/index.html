@@ -28,8 +28,12 @@
                 <img class="poster px-2" src="{{ ss.series.poster }}" alt="{{ ss.series.title }}" />
                 {{- ss.series.title -}}
             </a>
-            <a class="text-light text-decoration-none" href="{{ ss.series.url }}" target="_blank">^</a>
-            <a class="badge text-decoration-none" href="{{ ss.source.url }}" target="_blank">{{ ss.source.version | braille }}</a>
+            <div class="badge">
+                <a class="icon text-decoration-none" href="{{ ss.series.url }}" target="_blank">
+                    <img src="https://raw.githubusercontent.com/Sonarr/Sonarr/refs/heads/v5-develop/Logo/16.png" />
+                </a>
+                <a class="icon text-decoration-none" href="{{ ss.source.url }}" target="_blank">&#x1F310;</a>
+            </div>
         </td>
         <td class="text-center text-uppercase">
             {% if ss.completed %}

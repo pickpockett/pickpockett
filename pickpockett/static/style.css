@@ -1,3 +1,11 @@
 .poster {
     height: 2em;
 }
+
+.icon {
+    opacity: 0.5;
+}
+
+.icon:hover {
+    opacity: 0.75;
+}
