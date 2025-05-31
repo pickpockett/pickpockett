@@ -6,6 +6,11 @@
     opacity: 0.5;
 }
 
+.icon img {
+    height: 1.2em;
+    vertical-align: text-bottom;
+}
+
 .icon:hover {
     opacity: 0.75;
 }

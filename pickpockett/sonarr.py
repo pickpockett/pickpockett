@@ -193,6 +193,10 @@ class Sonarr:
             return r.json()
         return []
 
+    @property
+    def icon(self):
+        return urljoin(self.url, "Content/Images/logo.svg")
+
     def episode(self, series_id: int) -> List[Episode]:
         episode = self._get("episode", seriesId=series_id)
         episode_list = TypeAdapter(List[Episode]).validate_python(episode)
@@ -246,10 +250,7 @@ class Sonarr:
             for quality in chain(
                 *(
                     (
-                        (
-                            quality.quality.name
-                            for quality in quality_group.items
-                        )
+                        (quality.quality.name for quality in quality_group.items)
                         if quality_group.items
                         else [quality_group.quality.name]
                     )
@@ -267,9 +268,7 @@ class Sonarr:
         lookup = self._get("series/lookup", term=term)
         lookup_list = [
             series
-            for series in TypeAdapter(List[SeriesLookup]).validate_python(
-                lookup
-            )
+            for series in TypeAdapter(List[SeriesLookup]).validate_python(lookup)
             if series.quality_profile_id > 0
         ]
         return lookup_list
