@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.13.3-alpine
 
 ENV PIP_NO_CACHE_DIR 1
 ENV PIP_ROOT_USER_ACTION ignore
@@ -16,4 +16,4 @@ RUN pip3 install -r requirements.txt
 
 COPY migrations migrations
 COPY pickpockett pickpockett
-CMD [ "python3", "-m" , "pickpockett"]
+CMD ["python3", "-m" , "pickpockett"]
