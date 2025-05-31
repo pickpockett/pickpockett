@@ -3,7 +3,7 @@
 }
 
 .icon {
-    opacity: 0.5;
+    opacity: 0.25;
 }
 
 .icon img {
@@ -12,5 +12,5 @@
 }
 
 .icon:hover {
-    opacity: 0.75;
+    opacity: 0.5;
 }
