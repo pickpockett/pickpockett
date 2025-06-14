@@ -160,6 +160,9 @@ def _source_items(sonarr, source, season, episode):
     if not (source.datetime or update_magnet(source)):
         return []
 
+    if season is None and sonarr.already_downloaded(source.hash):
+        return []
+
     series = sonarr.get_series(source.tvdb_id)
     if series is None:
         return []

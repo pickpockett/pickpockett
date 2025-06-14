@@ -4,7 +4,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from itertools import chain
-from typing import Dict, List, Literal, Optional
+from typing import Callable, Dict, List, Literal, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -184,14 +184,14 @@ class Sonarr:
     def _url(self, endpoint):
         return urljoin(self.url, f"api/v3/{endpoint}")
 
-    def _get(self, endpoint, **kwargs):
+    def _get(self, endpoint, default_factory: Callable = list, **kwargs):
         url = self._url(endpoint)
         headers = {"User-Agent": "PickPockett"}
         params = {"apikey": self.apikey, **kwargs}
         r = requests.get(url, headers=headers, params=params)
         if r.ok:
             return r.json()
-        return []
+        return default_factory()
 
     @property
     def icon(self):
@@ -250,7 +250,10 @@ class Sonarr:
             for quality in chain(
                 *(
                     (
-                        (quality.quality.name for quality in quality_group.items)
+                        (
+                            quality.quality.name
+                            for quality in quality_group.items
+                        )
                         if quality_group.items
                         else [quality_group.quality.name]
                     )
@@ -268,7 +271,9 @@ class Sonarr:
         lookup = self._get("series/lookup", term=term)
         lookup_list = [
             series
-            for series in TypeAdapter(List[SeriesLookup]).validate_python(lookup)
+            for series in TypeAdapter(List[SeriesLookup]).validate_python(
+                lookup
+            )
             if series.quality_profile_id > 0
         ]
         return lookup_list
@@ -280,6 +285,21 @@ class Sonarr:
         parsed = self._get("parse", title=title)
         if parsed_info := parsed.get("parsedEpisodeInfo"):
             return ParsedEpisodeInfo.model_validate(parsed_info)
+
+    def _downloaded(self, download_id: str) -> bool:
+        history = self._get(
+            "history",
+            default_factory=dict,
+            downloadId=download_id,
+        )
+        return history.get("totalRecords", 0) > 0
+
+    def already_downloaded(self, source_hash: str):
+        download_id = source_hash.upper()
+        return self.cache.get_cached(
+            download_id,
+            lambda: self._downloaded(download_id),
+        )
 
 
 Series.model_rebuild()
