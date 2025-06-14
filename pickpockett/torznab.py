@@ -156,16 +156,6 @@ def _item_name(title, content, version, extra):
     return name
 
 
-def _ep_groups(episode_nums, max_episode_number=float("inf")):
-    return [
-        tuple(sorted({min(a := [v for _, v in gr]), max(a)}))
-        for _, gr in groupby(
-            enumerate(ep for ep in episode_nums if ep <= max_episode_number),
-            lambda x: x[0] - x[1],
-        )
-    ]
-
-
 def _source_items(sonarr, source, season, episode):
     if not (source.datetime or update_magnet(source)):
         return []
@@ -220,29 +210,34 @@ def _source_items(sonarr, source, season, episode):
             )
 
             if episode_number in episode_nums:
-                for max_episode_num in sorted(
-                    {max(episode_nums), episode_number}
-                ):
-                    ep_groups = _ep_groups(episode_nums, max_episode_num)
-                    episodes_name = _item_name(
-                        series.title,
-                        f"S{season_num:02}"
-                        + ",".join(
-                            "-".join(f"E{s:02}" for s in a) for a in ep_groups
+                ep_groups = [
+                    tuple(sorted({min(a := [v for _, v in gr]), max(a)}))
+                    for _, gr in groupby(
+                        enumerate(
+                            ep for ep in episode_nums if ep <= episode_number
                         ),
-                        source.version,
-                        source.extra,
+                        lambda x: x[0] - x[1],
                     )
-                    magnet = Magnet.from_hash(source.hash, dn=episodes_name)
-                    item = _item(
-                        episodes_name,
-                        source.url,
-                        source.datetime,
-                        magnet.url,
-                        magnet.hash,
-                        source.tvdb_id,
-                    )
-                    items.append(item)
+                ]
+                episodes_name = _item_name(
+                    series.title,
+                    f"S{season_num:02}"
+                    + ",".join(
+                        "-".join(f"E{s:02}" for s in a) for a in ep_groups
+                    ),
+                    source.version,
+                    source.extra,
+                )
+                magnet = Magnet.from_hash(source.hash, dn=episodes_name)
+                item = _item(
+                    episodes_name,
+                    source.url,
+                    source.datetime,
+                    magnet.url,
+                    magnet.hash,
+                    source.tvdb_id,
+                )
+                items.append(item)
 
     return items
 
