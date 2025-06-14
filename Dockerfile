@@ -1,4 +1,4 @@
-FROM python:3.13.3-alpine
+FROM python:3.13-alpine
 
 ENV PIP_NO_CACHE_DIR 1
 ENV PIP_ROOT_USER_ACTION ignore
