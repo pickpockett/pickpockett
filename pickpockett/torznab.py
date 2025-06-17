@@ -157,7 +157,7 @@ def _item_name(title, content, version, extra):
 
 
 def _source_items(sonarr, source, season, episode):
-    if not (source.datetime or update_magnet(source)):
+    if not (source.datetime or update_magnet(source, g.webhook)):
         return []
 
     if season is None and sonarr.already_downloaded(source.hash):

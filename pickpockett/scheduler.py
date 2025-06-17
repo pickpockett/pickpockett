@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from flask import Flask
+from flask import Flask, g
 from flask_apscheduler import APScheduler
 
 from . import Config
@@ -19,7 +19,7 @@ def check():
         before_request()
 
         for source in Source.query:
-            update_magnet(source)
+            update_magnet(source, g.webhook)
 
 
 def reschedule(conf: Config):

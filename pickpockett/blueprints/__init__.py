@@ -1,9 +1,10 @@
 from flask import g
 
+from . import api, ui
 from .. import config
 from ..flaresolverr import FlareSolverr
 from ..sonarr import Sonarr
-from . import api, ui
+from ..webhook import WebHook
 
 
 @api.bp.before_request
@@ -16,6 +17,7 @@ def before_request():
         if g.config.flaresolverr and g.config.flaresolverr.url
         else None
     )
+    g.webhook = WebHook(g.config.webhook.url) if g.config.webhook else None
 
 
 @api.bp.after_request

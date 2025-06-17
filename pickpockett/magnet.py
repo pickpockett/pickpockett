@@ -10,6 +10,7 @@ from .page import ParseError, get_torrent, parse
 
 if TYPE_CHECKING:
     from .models import Source
+    from .webhook import WebHook
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,7 @@ def get_magnet(url, cookies, user_agent) -> Tuple[Optional[Magnet], str]:
     return magnet, error
 
 
-def update_magnet(source: "Source"):
+def update_magnet(source: "Source", webhook: Optional["WebHook"]):
     source.refresh()
     magnet, err = get_magnet(source.url, source.cookies, source.user_agent)
 
@@ -111,6 +112,13 @@ def update_magnet(source: "Source"):
         logger.error("[tvdbid:%i]: error: %s", source.tvdb_id, err)
         return False
 
+    old_hash = source.hash
     source.update_magnet(magnet)
+
+    if webhook and old_hash != source.hash:
+        try:
+            webhook.hook(old_hash, source.hash)
+        except Exception as e:
+            logger.error("webhook: %s", e)
 
     return True

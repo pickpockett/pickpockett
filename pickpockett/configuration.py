@@ -19,10 +19,15 @@ class SonarrConfig(BaseModel):
     apikey: str
 
 
+class WebHook(BaseModel):
+    url: Union[AnyHttpUrl, Literal[""]]
+
+
 class Config(BaseModel):
     general: GeneralConfig
     sonarr: Optional[SonarrConfig] = None
     flaresolverr: Optional[FlareSolverrConfig] = None
+    webhook: Optional[WebHook] = None
 
 
 class ConfigManager:
