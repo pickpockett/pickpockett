@@ -47,5 +47,6 @@ def test_get_magnet(html):
 
 
 def test_magnet_display_name():
-    magnet = Magnet.from_hash("abcd", dn="Hello World")
-    assert magnet.url == "magnet:?xt=urn:btih:abcd&dn=Hello+World"
+    hsh = "0123456789abcdef0123456789abcdef01234567"
+    magnet = Magnet.from_hash(hsh, dn="Hello World")
+    assert magnet.url == f"magnet:?xt=urn:btih:{hsh}&dn=Hello+World"
