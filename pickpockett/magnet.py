@@ -23,9 +23,11 @@ class Magnet:
         self.user_agent = user_agent
         self._hash = None
 
+        _ = self.hash  # Trigger hash calculation on initialization
+
     @property
     def hash(self):
-        if self._hash is None or self._hash not in self.url:
+        if self.url and (self._hash is None or self._hash not in self.url):
             self._hash = _hash_from_magnet(self.url)
 
         return self._hash
@@ -79,6 +81,8 @@ def _hash_from_magnet(magnet_url):
     params = cast(Dict[str, List[str]], parse_qs(url.query))
     xt = params["xt"][0]
     infohash = xt.split(":")[-1]
+    if not re.match(r"^[0-9a-fA-Z]{40}$", infohash):
+        raise ParseError(f"Invalid magnet URL: {magnet_url}")
     return infohash
 
 
